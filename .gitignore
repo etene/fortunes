@@ -1,3 +1,4 @@
 db.sqlite3
 simon.txt
 *.pyc
+*.egg-info

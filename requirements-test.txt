@@ -1,2 +1,4 @@
 black==26.5.1
 ruff==0.15.22
+mypy==2.1.0
+django-stubs[compatible-mypy]==6.0.6
