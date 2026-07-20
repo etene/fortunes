@@ -3,3 +3,6 @@ simon.txt
 *.pyc
 *.egg-info
 .tox
+.venv
+.*_cache
+__pycache__

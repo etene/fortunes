@@ -21,12 +21,42 @@ from django.views.generic import RedirectView
 from fortunes.app import views
 
 urlpatterns = [
-    path("", RedirectView.as_view(pattern_name="random-fortune")),
-    path("admin/", admin.site.urls),
-    path("random/", views.random_fortune, name="random-fortune"),
-    path("random_image/<int:fortune_id>/", views.random_image, name="random-image"),
-    path("browse/", views.fortune_list, name="fortune-list"),
-    path("new/", views.new_fortune, name="new-fortune"),
-    path("<int:fortune_id>/", views.single_fortune, name="fortune-detail"),
-    path("<int:fortune_id>/edit/", views.edit_fortune, name="fortune-edit"),
+    path(
+        route="",
+        view=RedirectView.as_view(pattern_name="random-fortune"),
+    ),
+    path(
+        route="admin/",
+        view=admin.site.urls,
+    ),
+    path(
+        route="random/",
+        view=views.random_fortune,
+        name="random-fortune",
+    ),
+    path(
+        route="random_image/<int:fortune_id>/",
+        view=views.random_image,
+        name="random-image",
+    ),
+    path(
+        route="browse/",
+        view=views.fortune_list,
+        name="fortune-list",
+    ),
+    path(
+        route="new/",
+        view=views.new_fortune,
+        name="new-fortune",
+    ),
+    path(
+        route="<int:fortune_id>/",
+        view=views.single_fortune,
+        name="fortune-detail",
+    ),
+    path(
+        route="<int:fortune_id>/edit/",
+        view=views.edit_fortune,
+        name="fortune-edit",
+    ),
 ]

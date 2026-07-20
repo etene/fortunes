@@ -1,5 +1,10 @@
 from http import HTTPMethod, HTTPStatus
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
+from django.http import (
+    HttpRequest,
+    HttpResponse,
+    HttpResponseNotFound,
+    HttpResponseRedirect,
+)
 from django.shortcuts import aget_object_or_404, render
 from random import randint
 from datetime import UTC, date, datetime
@@ -8,7 +13,7 @@ from fortunes.immich import get_random_image
 from .models import Author, Fortune
 
 
-async def random_fortune(request):
+async def random_fortune(request: HttpRequest) -> HttpResponse:
     non_hidden_fortunes = Fortune.objects.exclude(hidden=True).with_authors()
     fortune_count = await non_hidden_fortunes.acount()
     random_fortune_offset = randint(0, fortune_count - 1)
@@ -19,7 +24,7 @@ async def random_fortune(request):
     return render(request, "app/index.html", context)
 
 
-async def random_image(request, fortune_id: int):
+async def random_image(request: HttpRequest, fortune_id: int) -> HttpResponse:
     try:
         fortune = await Fortune.objects.with_authors().aget(pk=fortune_id)
     except Fortune.DoesNotExist:
@@ -36,13 +41,13 @@ async def random_image(request, fortune_id: int):
     )
 
 
-async def single_fortune(request, fortune_id: int):
+async def single_fortune(request: HttpRequest, fortune_id: int):
     fortune = await aget_object_or_404(Fortune.objects.with_authors(), pk=fortune_id)
     context = {"fortune": fortune, "display_images": True}
     return render(request, "app/detail.html", context)
 
 
-async def fortune_list(request):
+async def fortune_list(request: HttpRequest) -> HttpResponse:
     context = {
         "fortunes": [
             i async for i in Fortune.objects.with_authors().order_by("-date").all()[:10]
@@ -51,7 +56,7 @@ async def fortune_list(request):
     return render(request, "app/fortune_list.html", context)
 
 
-async def new_fortune(request):
+async def new_fortune(request: HttpRequest) -> HttpResponse:
     authors = [i async for i in Author.objects.all()]
     if request.method == HTTPMethod.GET:
         context = {
@@ -64,12 +69,7 @@ async def new_fortune(request):
     elif request.method == HTTPMethod.POST:
         form = await build_fortune_form(data=request.POST)
         if form.is_valid():
-            created_fortune = await Fortune.objects.acreate(
-                author_id=int(form.cleaned_data["fortune_author_id"]),
-                date=form.cleaned_data["fortune_date"],
-                text=form.cleaned_data["fortune_text"],
-                hidden=form.cleaned_data["fortune_hidden"],
-            )
+            created_fortune = await form.create_fortune()
             return HttpResponseRedirect(f"/{created_fortune.id}/")
         context = {
             "authors": authors,
@@ -78,27 +78,24 @@ async def new_fortune(request):
             "form": form,
             "form_target": "/new/",
         }
-        return render(
-            request=request,
-            template_name="app/edit_fortune.html",
-            context=context,
-            status=HTTPStatus.BAD_REQUEST,
-        )
+    else:
+        assert False
+    return render(
+        request=request,
+        template_name="app/edit_fortune.html",
+        context=context,
+        status=HTTPStatus.BAD_REQUEST,
+    )
 
 
-async def edit_fortune(request, fortune_id: int):
+async def edit_fortune(request: HttpRequest, fortune_id: int) -> HttpResponse:
     fortune = await aget_object_or_404(Fortune.objects.with_authors(), pk=fortune_id)
     context = {"fortune": fortune, "display_images": True}
     status = HTTPStatus.OK
     if request.method == HTTPMethod.POST:
         form = await build_fortune_form(request.POST)
         if form.is_valid():
-            for field in form.changed_data:
-                setattr(
-                    fortune, field.removeprefix("fortune_"), form.cleaned_data[field]
-                )
-            if form.changed_data:
-                await fortune.asave()
+            await form.update_fortune(fortune)
             return HttpResponseRedirect(f"/{fortune.id}/")
         else:
             status = HTTPStatus.BAD_REQUEST
@@ -113,3 +110,6 @@ async def edit_fortune(request, fortune_id: int):
     context["form"] = form
     context["form_target"] = f"/{fortune.id}/edit/"
     return render(request, "app/edit_fortune.html", context, status=status)
+
+
+# async def delete_fortune(request, fortune_id: int):
