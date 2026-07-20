@@ -1,0 +1,35 @@
+{% load markdownify %}
+
+<div class="card shadow w-75 m-4">
+    <div class="card-header">
+        <ul class="nav nav-pills card-header-pills">
+            <li class="nav-item">
+                <a class="nav-link active" href="{% url 'fortune-detail' fortune.id %}"><span class="font-monospace">#{{fortune.id }}</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" aria-disabled="true"><span class="fw-light">{{ fortune.date }}</span></a>
+            </li>
+            <li class="nav-item text-end">
+                <a class="nav-link text-end" href="{% url 'fortune-edit' fortune.id %}">Modifier</a>
+            </li>
+        </ul>
+    </div>
+
+
+    <div class="card-body">
+        <figure class="text-center">
+            <blockquote class="blockquote">
+                {{ fortune.text | markdownify }}
+            </blockquote>
+            <figcaption class="blockquote-footer">
+                <i><span class="fst-italic">{{ fortune.author.name }}, {% if fortune.author_age %}{{ fortune.author_age }} ans{% endif %}</span>
+            </figcaption>
+        </figure>
+    </div>
+    {% if display_images %}
+    <div class="card-body m-2">
+        <img src="{% url 'random-image' fortune_id=fortune.id %}" class="card-img-bottom"
+            title="{{ fortune.author.name }} en {{ fortune.date.year }}">
+    </div>
+    {% endif %}
+</div>
