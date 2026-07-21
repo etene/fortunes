@@ -14,7 +14,7 @@ from .models import Author, Fortune
 
 
 async def random_fortune(request: HttpRequest) -> HttpResponse:
-    non_hidden_fortunes = Fortune.objects.exclude(hidden=True).with_authors()
+    non_hidden_fortunes = Fortune.objects.current().exclude(hidden=True).with_authors()
     fortune_count = await non_hidden_fortunes.acount()
     random_fortune_offset = randint(0, fortune_count - 1)
     random_fortune = await non_hidden_fortunes[
@@ -50,7 +50,12 @@ async def single_fortune(request: HttpRequest, fortune_id: int):
 async def fortune_list(request: HttpRequest) -> HttpResponse:
     context = {
         "fortunes": [
-            i async for i in Fortune.objects.with_authors().order_by("-date").all()[:10]
+            i
+            async for i in Fortune.objects.with_authors()
+            .current()
+            .exclude(hidden=True)
+            .order_by("-date")
+            .all()[:10]
         ]
     }
     return render(request, "app/fortune_list.html", context)
@@ -65,7 +70,7 @@ async def new_fortune(request: HttpRequest) -> HttpResponse:
             "fortune_date": date.today().isoformat(),
             "form": await build_fortune_form(),
         }
-        return render(request, "app/new_fortune.html", context)
+        return render(request, "app/edit_fortune.html", context)
     elif request.method == HTTPMethod.POST:
         form = await build_fortune_form(data=request.POST)
         if form.is_valid():
@@ -112,4 +117,12 @@ async def edit_fortune(request: HttpRequest, fortune_id: int) -> HttpResponse:
     return render(request, "app/edit_fortune.html", context, status=status)
 
 
-# async def delete_fortune(request, fortune_id: int):
+async def delete_fortune(request: HttpRequest, fortune_id: int):
+    fortune = await aget_object_or_404(Fortune, pk=fortune_id)
+    if fortune.deleted:
+        await fortune.adelete()
+    else:
+        fortune.deleted = True
+        await fortune.asave(update_fields=("deleted",))
+
+    return HttpResponseRedirect(redirect_to=request.GET.get("next", "/"))
