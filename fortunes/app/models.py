@@ -12,12 +12,19 @@ class Author(models.Model):
         return self.name
 
 
-class FortuneQuerySet(models.QuerySet):
+class FortuneQuerySet(models.QuerySet["Fortune"]):
     def with_authors(self) -> "FortuneQuerySet":
         return self.select_related("author")
 
+    def current(self) -> "FortuneQuerySet":
+        return self.filter(deleted=False)
+
+    def trashed(self) -> "FortuneQuerySet":
+        return self.filter(deleted=True)
+
 
 class Fortune(models.Model):
+
     objects = FortuneQuerySet().as_manager()
 
     class Meta:
@@ -36,7 +43,13 @@ class Fortune(models.Model):
     )
     date = models.DateField(null=False, help_text="Date on which the fortune was said")
     hidden = models.BooleanField(
-        default=False, help_text="Whether this fortune should be visible by default"
+        default=False,
+        help_text="Whether this fortune should be visible by default",
+    )
+
+    deleted = models.BooleanField(
+        default=False,
+        help_text="Whether this fortune was deleted",
     )
 
     @property
