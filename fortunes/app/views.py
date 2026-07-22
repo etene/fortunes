@@ -8,6 +8,7 @@ from django.http import (
 from django.shortcuts import aget_object_or_404, render
 from random import randint
 from datetime import UTC, date, datetime
+from fortunes.app.filters import FortuneFilter
 from fortunes.app.forms import build_fortune_form
 from fortunes.immich import get_random_image
 from .models import Author, Fortune
@@ -61,15 +62,15 @@ async def fortune_trashcan(request: HttpRequest) -> HttpResponse:
 
 
 async def fortune_list(request: HttpRequest) -> HttpResponse:
+    fortune_qs = (
+        Fortune.objects.with_authors().current().exclude(hidden=True).order_by("-date")
+    )
+    fortune_filter = FortuneFilter(
+        data=request.GET,
+        queryset=fortune_qs,
+    )
     context = {
-        "fortunes": [
-            i
-            async for i in Fortune.objects.with_authors()
-            .current()
-            .exclude(hidden=True)
-            .order_by("-date")
-            .all()[:10]
-        ]
+        "fortunes": [i async for i in fortune_filter.qs],
     }
     return render(request, "app/fortune_list.html", context)
 
