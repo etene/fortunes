@@ -45,6 +45,11 @@ urlpatterns = [
         name="fortune-list",
     ),
     path(
+        route="trashcan/",
+        view=views.fortune_trashcan,
+        name="fortune-trashcan",
+    ),
+    path(
         route="new/",
         view=views.new_fortune,
         name="new-fortune",
@@ -58,5 +63,10 @@ urlpatterns = [
         route="<int:fortune_id>/edit/",
         view=views.edit_fortune,
         name="fortune-edit",
+    ),
+    path(
+        route="<int:fortune_id>/delete/",
+        view=views.delete_fortune,
+        name="fortune-delete",
     ),
 ]

@@ -1,13 +1,22 @@
 {% extends "app/base.html" %}
 
-  {% block content %}
-    {% for fortune in fortunes %}
-    <div class="row">
-      <div class="col">
-        <!-- Card with the fortune -->
-        {% include "fortune_card.html" %}
-      </div>
+{% block content %}
+{% for fortune in fortunes %}
+<div class="row">
+  <div class="col">
+    <!-- Card with the fortune -->
+    {% include "fortune_card.html" %}
+  </div>
+</div>
+{% endfor %}
+{% if not fortunes %}
+<div class="row">
+  <div class="col">
+    <div class="alert alert-warning" role="alert">
+      Il n'y a rien ici
     </div>
-    {% endfor %}
+  </div>
+</div>
+{% endif %}
 
 {% endblock %}

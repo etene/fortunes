@@ -6,56 +6,59 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fortunes</title>
-    {# Load CSS and JavaScript #}
-    {% bootstrap_css %}
-    {% bootstrap_javascript %}
+  {# Load CSS and JavaScript #}
+  {% bootstrap_css %}
+  {% bootstrap_javascript %}
 </head>
 
 {# Display django.contrib.messages as Bootstrap alerts #}
 
 <body>
-    
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+
+  <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
       <a class="navbar-brand" href="/">Fortunes</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
-    </button>
+      </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-              <li class="nav-item">
-                  <a class="nav-link active" aria-current="page" href="{% url 'random-fortune' %}">Au hasard</a>
-                </li>
-                <li class="nav-item">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="{% url 'random-fortune' %}">Au hasard</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" href="{% url 'new-fortune' %}">Nouveau</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'fortune-trashcan' %}">Corbeille</a>
           </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Poètes
+              Poètes
             </a>
             <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#">Simon</a></li>
-                <li><a class="dropdown-item" href="#">Tepoe</a></li>
-                <li>
-                    <hr class="dropdown-divider">
+              <li><a class="dropdown-item" href="#">Simon</a></li>
+              <li><a class="dropdown-item" href="#">Tepoe</a></li>
+              <li>
+                <hr class="dropdown-divider">
               </li>
               <li><a class="dropdown-item" href="{% url 'fortune-list' %}">Tout le monde</a></li>
             </ul>
           </li>
         </ul>
         <form class="d-flex" role="search">
-            <input class="form-control me-2" type="search" placeholder="Chercher" aria-label="Search" />
-            <button class="btn btn-outline-success" type="submit">Chercher</button>
+          <input class="form-control me-2" type="search" placeholder="Chercher" aria-label="Search" />
+          <button class="btn btn-outline-success" type="submit">Chercher</button>
         </form>
+      </div>
     </div>
-</div>
-{% bootstrap_messages %}
+    {% bootstrap_messages %}
   </nav>
-  
-  <div class="container-fluid">
-      {% block content %}
-      {% endblock %}
-    </div>
 
-{# Read the documentation for more information #}
+  <div class="container-fluid">
+    {% block content %}
+    {% endblock %}
+  </div>
+
+  {# Read the documentation for more information #}

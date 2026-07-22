@@ -15,6 +15,9 @@
             </li>
             {% endif %}
             <li class="nav-item ms-auto">
+                <a class="nav-link" href="{% url 'fortune-delete' fortune.id %}">Supprimer{% if fortune.deleted %} définitivement{% endif %}</a>
+            </li>
+            <li class="nav-item ms-auto">
                 <a class="nav-link" href="{% url 'fortune-edit' fortune.id %}">Modifier</a>
             </li>
         </ul>

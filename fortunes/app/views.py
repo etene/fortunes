@@ -47,6 +47,19 @@ async def single_fortune(request: HttpRequest, fortune_id: int):
     return render(request, "app/detail.html", context)
 
 
+async def fortune_trashcan(request: HttpRequest) -> HttpResponse:
+    context = {
+        "fortunes": [
+            i
+            async for i in Fortune.objects.trashed()
+            .with_authors()
+            .order_by("-date")
+            .all()
+        ]
+    }
+    return render(request, "app/fortune_list.html", context)
+
+
 async def fortune_list(request: HttpRequest) -> HttpResponse:
     context = {
         "fortunes": [
