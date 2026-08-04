@@ -31,3 +31,8 @@ plugins = ["mypy_django_plugin.main"]
 [tool.django-stubs]
 django_settings_module = "fortunes.settings"
 
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "fortunes.settings"
+# -- recommended but optional:
+python_files = ["tests/test_*.py"]
+FAIL_INVALID_TEMPLATE_VARS = true

@@ -5,10 +5,12 @@ from django.http import (
     HttpResponseNotFound,
     HttpResponseRedirect,
 )
+from io import StringIO
+import csv
 from django.shortcuts import aget_object_or_404, render
 from random import randint
 from datetime import UTC, date, datetime
-from fortunes.app.filters import FortuneFilter
+from fortunes.app.filters import build_fortune_filter
 from fortunes.app.forms import build_fortune_form
 from fortunes.immich import get_random_image
 from .models import Author, Fortune
@@ -62,15 +64,14 @@ async def fortune_trashcan(request: HttpRequest) -> HttpResponse:
 
 
 async def fortune_list(request: HttpRequest) -> HttpResponse:
-    fortune_qs = (
-        Fortune.objects.with_authors().current().exclude(hidden=True).order_by("-date")
-    )
-    fortune_filter = FortuneFilter(
+    fortune_qs = Fortune.objects.with_authors().current().order_by("-date")
+    fortune_filter = await build_fortune_filter(
         data=request.GET,
         queryset=fortune_qs,
     )
     context = {
         "fortunes": [i async for i in fortune_filter.qs],
+        "search_form": fortune_filter.form,
     }
     return render(request, "app/fortune_list.html", context)
 
@@ -140,3 +141,28 @@ async def delete_fortune(request: HttpRequest, fortune_id: int):
         await fortune.asave(update_fields=("deleted",))
 
     return HttpResponseRedirect(redirect_to=request.GET.get("next", "/"))
+
+
+async def fortune_export(request: HttpRequest):
+
+    allowed_fields: tuple[str, ...] = ("id", "date", "author", "text", "hidden")
+    exported_fields = allowed_fields
+    if raw_fields := request.GET.get("fields"):
+        requested_fields = set(filter(None, raw_fields.split(",")))
+        exported_fields = tuple(filter(lambda y: y in allowed_fields, requested_fields))
+    if not exported_fields:
+        # TODO
+        raise
+    fortune_qs = Fortune.objects.with_authors().current().order_by("-date")
+    fortune_filter = await build_fortune_filter(
+        data=request.GET,
+        queryset=fortune_qs,
+    )
+    csv_output = StringIO()
+    csv_writer = csv.DictWriter(f=csv_output, fieldnames=exported_fields)
+    csv_writer.writeheader()
+    async for fortune in fortune_filter.qs.values(*exported_fields):
+        csv_writer.writerow(fortune)
+    return HttpResponse(
+        content=csv_output.getvalue(),
+    )

@@ -1,6 +1,15 @@
 {% extends "app/base.html" %}
+{% load django_bootstrap5 %}
 
 {% block content %}
+<div class="row">
+  <div class="col">
+        <form method="get" class="form">
+        {% bootstrap_form search_form layout="horizontal" %}
+        {% bootstrap_button button_type="submit" content="Chercher" %}
+        </form>
+  </div>
+</div>
 {% for fortune in fortunes %}
 <div class="row">
   <div class="col">
