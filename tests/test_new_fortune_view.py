@@ -1,3 +1,4 @@
+from typing import Any
 import pytest
 from django.test import AsyncClient
 from datetime import date
@@ -5,24 +6,50 @@ from http import HTTPStatus
 
 from fortunes.app.models import Author, Fortune
 
-pytestmark = [pytest.mark.django_db, pytest.mark.asyncio]
+pytestmark = [pytest.mark.django_db(transaction=True), pytest.mark.asyncio]
 
 
+@pytest.mark.parametrize(
+    ("payload", "expected_attrs"),
+    (
+        (
+            {
+                "fortune_text": "test",
+                "fortune_date": "20/07/2026",
+            },
+            {
+                "text": "test",
+                "date": date(year=2026, month=7, day=20),
+            },
+        ),
+        (
+            {
+                "fortune_text": "test",
+                "fortune_date": "",
+            },
+            {
+                "text": "test",
+                "date": None,
+            },
+        ),
+    ),
+)
 async def test_create_fortune(
     async_client: AsyncClient,
     author: Author,
+    payload: dict[str, Any],
+    expected_attrs: dict[str, Any],
 ):
     response = await async_client.post(
         "/new/",
         data={
             "fortune_author_id": author.id,
-            "fortune_text": "test",
-            "fortune_date": "20/07/2026",
+            **payload,
         },
     )
     assert response.status_code == HTTPStatus.FOUND
     created_fortune = await Fortune.objects.with_authors().aget()
-    assert created_fortune.text == "test"
-    assert created_fortune.date == date(year=2026, month=7, day=20)
+    for attname, expected_value in expected_attrs.items():
+        assert getattr(created_fortune, attname) == expected_value
     assert created_fortune.author == author
     assert response.headers["Location"] == f"/{created_fortune.id}/"

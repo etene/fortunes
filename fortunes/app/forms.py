@@ -15,6 +15,7 @@ class BaseFortuneForm(forms.Form):
         label="Date",
         widget=FortuneDateInput(format="%Y-%m-%d"),
         initial=date.today().isoformat(),
+        required=False,
     )
     fortune_text = forms.CharField(
         label="Fortune",

@@ -41,7 +41,10 @@ class Fortune(models.Model):
         help_text="This fortune's text",
         unique=True,
     )
-    date = models.DateField(null=False, help_text="Date on which the fortune was said")
+    date = models.DateField(
+        null=True,
+        help_text="Date on which the fortune was said",
+    )
     hidden = models.BooleanField(
         default=False,
         help_text="Whether this fortune should be visible by default",
@@ -54,6 +57,6 @@ class Fortune(models.Model):
 
     @property
     def author_age(self) -> int | None:
-        if self.author.birthday:
+        if self.date and self.author.birthday:
             return (self.date - self.author.birthday).days // 365
         return None

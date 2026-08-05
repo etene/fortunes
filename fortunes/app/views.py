@@ -33,10 +33,17 @@ async def random_image(request: HttpRequest, fortune_id: int) -> HttpResponse:
     except Fortune.DoesNotExist:
         return HttpResponseNotFound()
     image_bytes = await get_random_image(
-        taken_after=datetime(year=fortune.date.year, month=1, day=1, tzinfo=UTC),
-        taken_before=datetime(year=fortune.date.year + 1, month=1, day=1, tzinfo=UTC),
+        taken_after=(
+            datetime(year=fortune.date.year, month=1, day=1, tzinfo=UTC)
+            if fortune.date
+            else None
+        ),
+        taken_before=(
+            datetime(year=fortune.date.year + 1, month=1, day=1, tzinfo=UTC)
+            if fortune.date
+            else None
+        ),
         with_person=fortune.author,
-        search_term="portrait",
     )
     return HttpResponse(
         content=image_bytes,

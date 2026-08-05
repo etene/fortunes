@@ -16,12 +16,10 @@ async def _find_person_id(immich: AsyncClient, name: str) -> UUID:
     raise LookupError(f"No immich person found with {name=}")
 
 
-# {"page":1,"withExif":true,"query":"portrait","takenAfter":"2018-10-10T00:00:00.000Z","takenBefore":"2019-10-23T23:59:59.999Z","personIds":["58089707-902e-458c-a503-47000664b470"],"type":"IMAGE","language":"fr"}
 async def get_random_image(
-    taken_before: datetime,
-    taken_after: datetime,
     with_person: Author,
-    search_term: str,
+    taken_before: datetime | None = None,
+    taken_after: datetime | None = None,
 ) -> bytes:
 
     async with AsyncClient(
