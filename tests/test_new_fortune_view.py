@@ -3,7 +3,6 @@ import pytest
 from django.test import AsyncClient
 from datetime import date
 from http import HTTPStatus
-
 from fortunes.app.models import Author, Fortune
 
 pytestmark = [pytest.mark.django_db(transaction=True), pytest.mark.asyncio]
