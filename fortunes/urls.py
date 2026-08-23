@@ -69,4 +69,9 @@ urlpatterns = [
         view=views.delete_fortune,
         name="fortune-delete",
     ),
+    path(
+        route="export/",
+        view=views.fortune_export,
+        name="fortune-export",
+    ),
 ]

@@ -31,7 +31,7 @@
                 {{ fortune.text | markdownify }}
             </blockquote>
             <figcaption class="blockquote-footer">
-                <i><span class="fst-italic">{{ fortune.author.name }}, {% if fortune.author_age %}{{ fortune.author_age }} ans{% endif %}</span></i>
+                <i><span class="fst-italic">{{ fortune.author.name }}{% if fortune.author_age %}, {{ fortune.author_age }} ans{% endif %}</span></i>
             </figcaption>
         </figure>
     </div>

@@ -159,7 +159,7 @@ async def fortune_export(request: HttpRequest):
         exported_fields = tuple(filter(lambda y: y in allowed_fields, requested_fields))
     if not exported_fields:
         # TODO
-        raise
+        raise ValueError
     fortune_qs = Fortune.objects.with_authors().current().order_by("-date")
     fortune_filter = await build_fortune_filter(
         data=request.GET,
@@ -172,4 +172,5 @@ async def fortune_export(request: HttpRequest):
         csv_writer.writerow(fortune)
     return HttpResponse(
         content=csv_output.getvalue(),
+        headers={"Content-Type": "text/csv"},
     )
