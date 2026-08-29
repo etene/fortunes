@@ -14,6 +14,7 @@ from fortunes.app.filters import build_fortune_filter
 from fortunes.app.forms import build_fortune_form
 from fortunes.immich import get_random_image
 from .models import Author, Fortune
+from django.db.models import F
 
 
 async def random_fortune(request: HttpRequest) -> HttpResponse:
@@ -152,15 +153,18 @@ async def delete_fortune(request: HttpRequest, fortune_id: int):
 
 async def fortune_export(request: HttpRequest):
 
-    allowed_fields: tuple[str, ...] = ("id", "date", "author", "text", "hidden")
+    allowed_fields: tuple[str, ...] = ("id", "date", "author_name", "text", "hidden")
     exported_fields = allowed_fields
     if raw_fields := request.GET.get("fields"):
         requested_fields = set(filter(None, raw_fields.split(",")))
-        exported_fields = tuple(filter(lambda y: y in allowed_fields, requested_fields))
+        exported_fields = tuple(filter(lambda y: y in requested_fields, allowed_fields))
     if not exported_fields:
         # TODO
         raise ValueError
     fortune_qs = Fortune.objects.with_authors().current().order_by("-date")
+    if "author_name" in exported_fields:
+        fortune_qs = fortune_qs.annotate(author_name=F("author__name"))
+
     fortune_filter = await build_fortune_filter(
         data=request.GET,
         queryset=fortune_qs,
@@ -172,5 +176,8 @@ async def fortune_export(request: HttpRequest):
         csv_writer.writerow(fortune)
     return HttpResponse(
         content=csv_output.getvalue(),
-        headers={"Content-Type": "text/csv"},
+        headers={
+            "Content-Type": "text/csv",
+            "Content-Disposition": 'attachment; filename="fortunes-export.csv"',
+        },
     )

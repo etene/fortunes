@@ -7,8 +7,6 @@ import pytest
 
 from fortunes.app.models import Author, Fortune
 
-# FortunesModelT = TypeVar("FortunesModelT", bound=Model)
-
 
 def get_base_name(factory_class: type[DjangoModelFactory]) -> str:
     return factory_class.__name__.removesuffix("Factory").lower()

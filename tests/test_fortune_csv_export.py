@@ -23,13 +23,17 @@ async def test_export_fortunes_csv(
     response = await async_client.get("/export/")
     assert response.status_code == HTTPStatus.OK
     assert response.headers["Content-Type"] == "text/csv"
+    assert (
+        response.headers["Content-Disposition"]
+        == 'attachment; filename="fortunes-export.csv"'
+    )
     reader = csv.DictReader(response.content.decode().splitlines())
     rows = list(reader)
     assert len(rows) == len(fortunes) == 30
     for row, fortune in zip(rows, fortunes):
-        assert list(row) == ["id", "date", "author", "text", "hidden"]
+        assert list(row) == ["id", "date", "author_name", "text", "hidden"]
         assert row["id"] == str(fortune.id)
         assert row["date"] == str(fortune.date)
-        assert row["author"] == str(fortune.author_id)
+        assert row["author_name"] == author.name
         assert row["text"] == fortune.text
         assert row["hidden"] == str(fortune.hidden)
