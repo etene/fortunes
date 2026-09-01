@@ -22,6 +22,12 @@ class FortuneQuerySet(models.QuerySet["Fortune"]):
     def trashed(self) -> "FortuneQuerySet":
         return self.filter(deleted=True)
 
+    def with_author_names(self) -> "FortuneQuerySet":
+        return self.annotate(author_name=models.F("author__name"))
+
+    def latest_first(self) -> "FortuneQuerySet":
+        return self.order_by("-date")
+
 
 class Fortune(models.Model):
 

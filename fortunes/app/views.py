@@ -14,7 +14,6 @@ from fortunes.app.filters import build_fortune_filter
 from fortunes.app.forms import build_fortune_form
 from fortunes.immich import get_random_image
 from .models import Author, Fortune
-from django.db.models import F
 
 
 async def random_fortune(request: HttpRequest) -> HttpResponse:
@@ -61,18 +60,14 @@ async def single_fortune(request: HttpRequest, fortune_id: int):
 async def fortune_trashcan(request: HttpRequest) -> HttpResponse:
     context = {
         "fortunes": [
-            i
-            async for i in Fortune.objects.trashed()
-            .with_authors()
-            .order_by("-date")
-            .all()
+            i async for i in Fortune.objects.trashed().with_authors().latest_first()
         ]
     }
     return render(request, "app/fortune_list.html", context)
 
 
 async def fortune_list(request: HttpRequest) -> HttpResponse:
-    fortune_qs = Fortune.objects.with_authors().current().order_by("-date")
+    fortune_qs = Fortune.objects.with_authors().current().latest_first()
     fortune_filter = await build_fortune_filter(
         data=request.GET,
         queryset=fortune_qs,
@@ -161,9 +156,9 @@ async def fortune_export(request: HttpRequest):
     if not exported_fields:
         # TODO
         raise ValueError
-    fortune_qs = Fortune.objects.with_authors().current().order_by("-date")
+    fortune_qs = Fortune.objects.current().latest_first()
     if "author_name" in exported_fields:
-        fortune_qs = fortune_qs.annotate(author_name=F("author__name"))
+        fortune_qs = fortune_qs.with_author_names()
 
     fortune_filter = await build_fortune_filter(
         data=request.GET,

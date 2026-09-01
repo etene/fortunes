@@ -37,3 +37,34 @@ async def test_export_fortunes_csv(
         assert row["author_name"] == author.name
         assert row["text"] == fortune.text
         assert row["hidden"] == str(fortune.hidden)
+
+
+@pytest.mark.parametrize(
+    "requested_fields",
+    (
+        ("id", "author_name", "date"),
+        ("id", "text", "text"),
+        ("hidden",),
+    ),
+)
+async def test_export_fortunes_csv_custom_fields(
+    async_client: AsyncClient,
+    author: Author,
+    fortune_factory: AsyncFactory[Fortune],
+    requested_fields: tuple[str, ...],
+):
+    await fortune_factory.create_batch(3, author=author)
+    fortunes = [i async for i in Fortune.objects.with_author_names().latest_first()]
+
+    response = await async_client.get(
+        "/export/", data={"fields": ",".join(requested_fields)}
+    )
+    assert response.status_code == HTTPStatus.OK
+    assert response.headers["Content-Type"] == "text/csv"
+    reader = csv.DictReader(response.content.decode().splitlines())
+    rows = list(reader)
+    assert len(rows) == len(fortunes) == 3
+    for row, fortune in zip(rows, fortunes):
+        assert set(row) == set(requested_fields)
+        for i in requested_fields:
+            assert row[i] == str(getattr(fortune, i))
