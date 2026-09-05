@@ -19,7 +19,10 @@ from .models import Author, Fortune
 
 async def random_fortune(request: HttpRequest) -> HttpResponse:
     non_hidden_fortunes = Fortune.objects.current().exclude(hidden=True).with_authors()
-    fortune_count = await non_hidden_fortunes.acount()
+
+    if not (fortune_count := await non_hidden_fortunes.acount()):
+        return HttpResponseNotFound(content="No fortunes")
+
     random_fortune_offset = randint(0, fortune_count - 1)
     random_fortune = await non_hidden_fortunes[
         random_fortune_offset : random_fortune_offset + 1

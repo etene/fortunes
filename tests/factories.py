@@ -41,6 +41,9 @@ class AsyncFactory[FortunesModelT: Model]():
         created = self.factory_class.build_batch(size=size, **overrides)
         return await self.model.objects.abulk_create(objs=created)  # type: ignore[attr-defined]
 
+    def build_batch(self, size: int, **kwargs: Any) -> list[FortunesModelT]:
+        return self.factory_class.build_batch(size=size, **kwargs)
+
 
 class AuthorFactory(DjangoModelFactory[Author]):
     class Meta:
@@ -57,7 +60,7 @@ class FortuneFactory(DjangoModelFactory[Fortune]):
 
     author = SubFactory(AuthorFactory)
     text = Faker("paragraph")
-    date = Faker("date")
+    date = Faker("date_object")
     hidden = False
 
 

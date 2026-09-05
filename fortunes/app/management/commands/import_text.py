@@ -1,5 +1,5 @@
 from argparse import FileType
-from datetime import date
+from datetime import date, datetime
 from io import TextIOWrapper
 from django.core.management import BaseCommand
 import re
@@ -23,8 +23,11 @@ class Command(BaseCommand):
             date_match = date_re.search(line)
             assert date_match, f"no date for {line!r} !"
             date_parts = {k: int(v) for k, v in date_match.groupdict().items()}
-            if date_parts["year"] < 2000:
-                date_parts["year"] += 2000
+            if (year := date_parts["year"]) < 100:
+                if year < datetime.now().date().year - 2000:
+                    date_parts["year"] += 2000
+                else:
+                    date_parts["year"] += 1900
             text = line[date_match.end() :]
             assert text not in seen, f"Duplicate fortune {text!r}"
             seen.add(text)
