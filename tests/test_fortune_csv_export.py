@@ -68,3 +68,14 @@ async def test_export_fortunes_csv_custom_fields(
         assert set(row) == set(requested_fields)
         for i in requested_fields:
             assert row[i] == str(getattr(fortune, i))
+
+
+async def test_export_fortunes_csv_bad_fields(
+    async_client: AsyncClient,
+):
+    requested_fields = ("author",)
+    response = await async_client.get(
+        "/export/", data={"fields": ",".join(requested_fields)}
+    )
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.content.decode().startswith("One or more of the following")

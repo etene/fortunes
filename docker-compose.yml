@@ -1,0 +1,7 @@
+services:
+  fortunes:
+    ports:
+      - "8000:8000/tcp"
+    build: .
+    volumes:
+      - ./data/:/home/fortunes/.config/fortunes/

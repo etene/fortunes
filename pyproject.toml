@@ -18,7 +18,10 @@ dependencies = {file = ["requirements.txt"]}
 [tool.setuptools]
 packages = [
     "fortunes",
-    # XXX submodules  ?
+    "fortunes.app",
+    "fortunes.app.migrations",
+    "fortunes.app.management",
+    "fortunes.app.management.commands",
 ]
 
 [tool.mypy]

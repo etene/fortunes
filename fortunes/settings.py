@@ -10,7 +10,16 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import environ  # type: ignore[import-untyped]
+import secrets
 from pathlib import Path
+
+env = environ.Env()
+
+DATA_DIR = Path.home().joinpath(".config", "fortunes")
+DATA_DIR.mkdir(exist_ok=True)
+
+env.read_env(DATA_DIR / ".env")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,13 +29,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-08pe+lk&bi3!%rk0h2)jt#1fy$g8drd2olv*h+^9ynp@pliahj"
+SECRET_KEY = env("FORTUNES_SECRET_KEY", default=secrets.token_urlsafe())
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env("FORTUNES_DEBUG", default=False)
 
-ALLOWED_HOSTS: list[str] = []
-
+ALLOWED_HOSTS: list[str] = env.list("FORTUNES_ALLOWED_HOSTS", default=["localhost"])
 
 # Application definition
 
@@ -79,7 +87,7 @@ WSGI_APPLICATION = "fortunes.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": DATA_DIR / "db.sqlite3",
     }
 }
 
@@ -119,3 +127,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = "static/"
+
+IMMICH_BASE_URL = env("IMMICH_BASE_URL", default=None)
+IMMICH_API_KEY = env("IMMICH_API_KEY", default=None)

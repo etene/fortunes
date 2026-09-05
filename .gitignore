@@ -6,3 +6,5 @@ simon.txt
 .venv
 .*_cache
 __pycache__
+/data/.env
+/data/db.sqlite3

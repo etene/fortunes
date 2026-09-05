@@ -2,6 +2,7 @@ from http import HTTPMethod, HTTPStatus
 from django.http import (
     HttpRequest,
     HttpResponse,
+    HttpResponseBadRequest,
     HttpResponseNotFound,
     HttpResponseRedirect,
 )
@@ -154,8 +155,10 @@ async def fortune_export(request: HttpRequest):
         requested_fields = set(filter(None, raw_fields.split(",")))
         exported_fields = tuple(filter(lambda y: y in requested_fields, allowed_fields))
     if not exported_fields:
-        # TODO
-        raise ValueError
+        return HttpResponseBadRequest(
+            content="One or more of the following comma-separated fields "
+            "is required as the 'fields' GET parameter:\n" + ", ".join(allowed_fields)
+        )
     fortune_qs = Fortune.objects.current().latest_first()
     if "author_name" in exported_fields:
         fortune_qs = fortune_qs.with_author_names()
