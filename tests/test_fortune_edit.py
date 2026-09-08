@@ -96,3 +96,29 @@ async def test_edit_fortune_text(
     assert response["Location"] == f"/{fortune.id}/"
     await fortune.arefresh_from_db()
     assert fortune.text == "New text."
+
+
+async def test_edit_fortune_error(
+    fortune: Fortune,
+    async_client: AsyncClient,
+):
+    bad_author_id = fortune.author.id + 1
+    response = await async_client.post(
+        f"/{fortune.id}/edit/",
+        data={
+            "fortune_author_id": bad_author_id,
+        },
+    )
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+    assert_html(
+        response.content,
+        HTMLElement(
+            tag="div",
+            # FIXME: the author name should be in the error, not its ID
+            content=f"Sélectionnez un choix valide. {bad_author_id} n'en fait pas partie.",
+            attrs={
+                "class": "invalid-feedback d-block",
+            },
+        ),
+    )
