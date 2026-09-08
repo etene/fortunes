@@ -39,3 +39,4 @@ DJANGO_SETTINGS_MODULE = "fortunes.settings"
 # -- recommended but optional:
 python_files = ["tests/test_*.py"]
 FAIL_INVALID_TEMPLATE_VARS = true
+asyncio_default_fixture_loop_scope = "function"
