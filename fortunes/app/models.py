@@ -1,7 +1,5 @@
 from django.db import models
 
-# Create your models here.
-
 
 class Author(models.Model):
     name = models.TextField(null=False, blank=False, unique=True)

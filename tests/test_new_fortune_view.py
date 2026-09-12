@@ -13,8 +13,8 @@ pytestmark = [pytest.mark.django_db(transaction=True), pytest.mark.asyncio]
     (
         (
             {
-                "fortune_text": "test",
-                "fortune_date": "20/07/2026",
+                "text": "test",
+                "date": "20/07/2026",
             },
             {
                 "text": "test",
@@ -23,8 +23,8 @@ pytestmark = [pytest.mark.django_db(transaction=True), pytest.mark.asyncio]
         ),
         (
             {
-                "fortune_text": "test",
-                "fortune_date": "",
+                "text": "test  ",
+                "date": "",
             },
             {
                 "text": "test",
@@ -42,7 +42,7 @@ async def test_create_fortune(
     response = await async_client.post(
         "/new/",
         data={
-            "fortune_author_id": author.id,
+            "author_id": author.id,
             **payload,
         },
     )

@@ -87,9 +87,9 @@ async def test_edit_fortune_text(
     response = await async_client.post(
         f"/{fortune.id}/edit/",
         data={
-            "fortune_text": "New text.",
+            "text": "New text.",
             # FIXME it should work without needing to specify it if unchanged
-            "fortune_author_id": fortune.author.id,
+            "author_id": fortune.author.id,
         },
     )
     assert response.status_code == HTTPStatus.FOUND
@@ -106,7 +106,7 @@ async def test_edit_fortune_error(
     response = await async_client.post(
         f"/{fortune.id}/edit/",
         data={
-            "fortune_author_id": bad_author_id,
+            "author_id": bad_author_id,
         },
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST

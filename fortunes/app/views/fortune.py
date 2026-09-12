@@ -1,4 +1,5 @@
 from http import HTTPMethod, HTTPStatus
+from typing import Any
 from django.http import (
     HttpRequest,
     HttpResponse,
@@ -12,9 +13,9 @@ from django.shortcuts import aget_object_or_404, render
 from random import randint
 from datetime import UTC, date, datetime
 from fortunes.app.filters import build_fortune_filter
-from fortunes.app.forms import build_fortune_form
+from fortunes.app.forms.fortune import build_fortune_form_cls
 from fortunes.immich import get_random_image
-from .models import Author, Fortune
+from fortunes.app.models import Author, Fortune
 
 
 async def random_fortune(request: HttpRequest) -> HttpResponse:
@@ -85,23 +86,22 @@ async def fortune_list(request: HttpRequest) -> HttpResponse:
 
 async def new_fortune(request: HttpRequest) -> HttpResponse:
     authors = [i async for i in Author.objects.all()]
+    context: dict[str, Any] = {
+        "authors": authors,
+        "selected_author": authors[0] if authors else None,
+        "fortune_date": date.today().isoformat(),
+    }
     if request.method == HTTPMethod.GET:
-        context = {
-            "authors": authors,
-            "selected_author": authors[0] if authors else None,
-            "fortune_date": date.today().isoformat(),
-            "form": await build_fortune_form(),
+        context |= {
+            "form": await build_fortune_form_cls(),
         }
         return render(request, "app/edit_fortune.html", context)
     elif request.method == HTTPMethod.POST:
-        form = await build_fortune_form(data=request.POST)
+        form = (await build_fortune_form_cls())(data=request.POST)
         if form.is_valid():
-            created_fortune = await form.create_fortune()
+            created_fortune = await form.create()
             return HttpResponseRedirect(f"/{created_fortune.id}/")
-        context = {
-            "authors": authors,
-            "selected_author": authors[0] if authors else None,
-            "fortune_date": date.today().isoformat(),
+        context |= {
             "form": form,
             "form_target": "/new/",
         }
@@ -120,20 +120,14 @@ async def edit_fortune(request: HttpRequest, fortune_id: int) -> HttpResponse:
     context = {"fortune": fortune, "display_images": True}
     status = HTTPStatus.OK
     if request.method == HTTPMethod.POST:
-        form = await build_fortune_form(request.POST)
+        form = (await build_fortune_form_cls())(request.POST)
         if form.is_valid():
-            await form.update_fortune(fortune)
+            await form.update(fortune)
             return HttpResponseRedirect(f"/{fortune.id}/")
         else:
             status = HTTPStatus.BAD_REQUEST
     else:
-        form = await build_fortune_form(
-            data={
-                "fortune_text": fortune.text,
-                "fortune_date": fortune.date,
-                "fortune_author_id": fortune.author_id,
-            }
-        )
+        form = (await build_fortune_form_cls()).from_instance(fortune)
     context["form"] = form
     context["form_target"] = f"/{fortune.id}/edit/"
     return render(request, "app/edit_fortune.html", context, status=status)

@@ -18,7 +18,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.views.generic import RedirectView
-from fortunes.app import views
+import fortunes.app.views.fortune
+import fortunes.app.views.author
 
 urlpatterns = [
     path(
@@ -31,47 +32,47 @@ urlpatterns = [
     ),
     path(
         route="random/",
-        view=views.random_fortune,
+        view=fortunes.app.views.fortune.random_fortune,
         name="random-fortune",
     ),
     path(
         route="random_image/<int:fortune_id>/",
-        view=views.random_image,
+        view=fortunes.app.views.fortune.random_image,
         name="random-image",
     ),
     path(
         route="browse/",
-        view=views.fortune_list,
+        view=fortunes.app.views.fortune.fortune_list,
         name="fortune-list",
     ),
     path(
         route="trashcan/",
-        view=views.fortune_trashcan,
+        view=fortunes.app.views.fortune.fortune_trashcan,
         name="fortune-trashcan",
     ),
     path(
         route="new/",
-        view=views.new_fortune,
+        view=fortunes.app.views.fortune.new_fortune,
         name="new-fortune",
     ),
     path(
         route="<int:fortune_id>/",
-        view=views.single_fortune,
+        view=fortunes.app.views.fortune.single_fortune,
         name="fortune-detail",
     ),
     path(
         route="<int:fortune_id>/edit/",
-        view=views.edit_fortune,
+        view=fortunes.app.views.fortune.edit_fortune,
         name="fortune-edit",
     ),
     path(
         route="<int:fortune_id>/delete/",
-        view=views.delete_fortune,
+        view=fortunes.app.views.fortune.delete_fortune,
         name="fortune-delete",
     ),
     path(
         route="export/",
-        view=views.fortune_export,
+        view=fortunes.app.views.fortune.fortune_export,
         name="fortune-export",
     ),
 ]
