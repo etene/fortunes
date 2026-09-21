@@ -130,3 +130,5 @@ STATIC_URL = "static/"
 
 IMMICH_BASE_URL = env("IMMICH_BASE_URL", default=None)
 IMMICH_API_KEY = env("IMMICH_API_KEY", default=None)
+
+MESSAGE_STORAGE = "django.contrib.messages.storage.cookie.CookieStorage"

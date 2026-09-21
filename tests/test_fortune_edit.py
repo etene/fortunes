@@ -84,18 +84,20 @@ async def test_edit_fortune_text(
     fortune: Fortune,
     async_client: AsyncClient,
 ):
+    assert fortune.date
     response = await async_client.post(
         f"/{fortune.id}/edit/",
         data={
             "text": "New text.",
-            # FIXME it should work without needing to specify it if unchanged
             "author_id": fortune.author.id,
+            "date": fortune.date.strftime("%Y-%m-%d"),
         },
     )
     assert response.status_code == HTTPStatus.FOUND
     assert response["Location"] == f"/{fortune.id}/"
     await fortune.arefresh_from_db()
     assert fortune.text == "New text."
+    assert fortune.date
 
 
 async def test_edit_fortune_error(

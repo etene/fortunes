@@ -4,6 +4,7 @@ from factory.django import DjangoModelFactory
 from factory import Faker, SubFactory
 import pytest_asyncio
 import pytest
+from datetime import UTC
 
 from fortunes.app.models import Author, Fortune
 
@@ -50,8 +51,8 @@ class AuthorFactory(DjangoModelFactory[Author]):
         model = Author
 
     name = Faker("first_name")
-    birthday = Faker("date")
-    immich_id = Faker("uuid4")
+    birthday = Faker("past_date", tzinfo=UTC)
+    immich_id = Faker("uuid4", cast_to=None)
 
 
 class FortuneFactory(DjangoModelFactory[Fortune]):

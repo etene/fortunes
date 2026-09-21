@@ -75,4 +75,9 @@ urlpatterns = [
         view=fortunes.app.views.fortune.fortune_export,
         name="fortune-export",
     ),
+    path(
+        route="author/<int:pk>/",
+        view=fortunes.app.views.author.AuthorFormView.as_view(),
+        name="author-edit",
+    ),
 ]

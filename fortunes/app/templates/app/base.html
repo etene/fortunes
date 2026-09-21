@@ -11,8 +11,6 @@
   {% bootstrap_javascript %}
 </head>
 
-{# Display django.contrib.messages as Bootstrap alerts #}
-
 <body>
 
   <nav class="navbar navbar-expand-lg bg-body-tertiary">
@@ -37,13 +35,11 @@
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Poètes
             </a>
+            <!-- TODO disable when no authors-->
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#">Simon</a></li>
-              <li><a class="dropdown-item" href="#">Tepoe</a></li>
-              <li>
-                <hr class="dropdown-divider">
-              </li>
-              <li><a class="dropdown-item" href="{% url 'fortune-list' %}">Tout le monde</a></li>
+              {% for author in authors %}
+              <li><a class="dropdown-item" href="/author/{{ author.id }}">{{ author.name }}</a></li>
+              {% endfor %}
             </ul>
           </li>
         </ul>
@@ -53,9 +49,8 @@
         </form>
       </div>
     </div>
-    {% bootstrap_messages %}
   </nav>
-
+  {% bootstrap_messages %}
   <div class="container-fluid">
     {% block content %}
     {% endblock %}
