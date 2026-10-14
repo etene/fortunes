@@ -1,5 +1,3 @@
-from http import HTTPMethod, HTTPStatus
-from typing import Any
 from django.http import (
     HttpRequest,
     HttpResponse,
@@ -11,9 +9,10 @@ from io import StringIO
 import csv
 from django.shortcuts import aget_object_or_404, render
 from random import randint
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime
 from fortunes.app.filters import build_fortune_filter
-from fortunes.app.forms.fortune import build_fortune_form_cls
+from fortunes.app.forms.fortune import BaseFortuneForm, build_fortune_form_cls
+from fortunes.app.views.base import BaseCreateFormView, BaseEditFormView
 from fortunes.immich import get_random_image
 from fortunes.app.models import Author, Fortune
 
@@ -28,7 +27,11 @@ async def random_fortune(request: HttpRequest) -> HttpResponse:
     random_fortune = await non_hidden_fortunes[
         random_fortune_offset : random_fortune_offset + 1
     ].aget()
-    context = {"fortune": random_fortune, "display_images": True}
+    context = {
+        "fortune": random_fortune,
+        "display_images": True,
+        "authors": [i async for i in Author.objects.all()],
+    }
     return render(request, "app/index.html", context)
 
 
@@ -84,53 +87,24 @@ async def fortune_list(request: HttpRequest) -> HttpResponse:
     return render(request, "app/fortune_list.html", context)
 
 
-async def new_fortune(request: HttpRequest) -> HttpResponse:
-    authors = [i async for i in Author.objects.all()]
-    context: dict[str, Any] = {
-        "authors": authors,
-        "selected_author": authors[0] if authors else None,
-        "fortune_date": date.today().isoformat(),
-    }
-    if request.method == HTTPMethod.GET:
-        context |= {
-            "form": await build_fortune_form_cls(),
-        }
-        return render(request, "app/edit_fortune.html", context)
-    elif request.method == HTTPMethod.POST:
-        form = (await build_fortune_form_cls())(data=request.POST)
-        if form.is_valid():
-            created_fortune = await form.create()
-            return HttpResponseRedirect(f"/{created_fortune.id}/")
-        context |= {
-            "form": form,
-            "form_target": "/new/",
-        }
-    else:
-        assert False
-    return render(
-        request=request,
-        template_name="app/edit_fortune.html",
-        context=context,
-        status=HTTPStatus.BAD_REQUEST,
-    )
+class FortuneEditFormView(BaseEditFormView[Fortune]):
+    template = "app/edit_fortune.html"
+
+    async def get_form_class(self) -> type[BaseFortuneForm]:
+        return await build_fortune_form_cls()
+
+    def get_redirect_path(self, instance: Fortune) -> str:
+        return f"/{instance.pk}/"
 
 
-async def edit_fortune(request: HttpRequest, fortune_id: int) -> HttpResponse:
-    fortune = await aget_object_or_404(Fortune.objects.with_authors(), pk=fortune_id)
-    context = {"fortune": fortune, "display_images": True}
-    status = HTTPStatus.OK
-    if request.method == HTTPMethod.POST:
-        form = (await build_fortune_form_cls())(request.POST)
-        if form.is_valid():
-            await form.update(fortune)
-            return HttpResponseRedirect(f"/{fortune.id}/")
-        else:
-            status = HTTPStatus.BAD_REQUEST
-    else:
-        form = (await build_fortune_form_cls()).from_instance(fortune)
-    context["form"] = form
-    context["form_target"] = f"/{fortune.id}/edit/"
-    return render(request, "app/edit_fortune.html", context, status=status)
+class FortuneCreateFormView(BaseCreateFormView[Fortune]):
+    template = "app/edit_fortune.html"
+
+    async def get_form_class(self) -> type[BaseFortuneForm]:
+        return await build_fortune_form_cls()
+
+    def get_redirect_path(self, instance: Fortune) -> str:
+        return f"/{instance.pk}/"
 
 
 async def delete_fortune(request: HttpRequest, fortune_id: int):

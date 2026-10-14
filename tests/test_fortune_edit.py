@@ -24,7 +24,6 @@ async def test_get_fortune_edit_form(
         HTMLElement(
             tag="form",
             attrs={
-                "action": f"/{fortune.id}/edit/",
                 "method": "post",
                 "class": "form",
             },

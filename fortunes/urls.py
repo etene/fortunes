@@ -52,7 +52,7 @@ urlpatterns = [
     ),
     path(
         route="new/",
-        view=fortunes.app.views.fortune.new_fortune,
+        view=fortunes.app.views.fortune.FortuneCreateFormView.as_view(),
         name="new-fortune",
     ),
     path(
@@ -61,8 +61,8 @@ urlpatterns = [
         name="fortune-detail",
     ),
     path(
-        route="<int:fortune_id>/edit/",
-        view=fortunes.app.views.fortune.edit_fortune,
+        route="<int:pk>/edit/",
+        view=fortunes.app.views.fortune.FortuneEditFormView.as_view(),
         name="fortune-edit",
     ),
     path(
@@ -77,7 +77,7 @@ urlpatterns = [
     ),
     path(
         route="author/<int:pk>/",
-        view=fortunes.app.views.author.AuthorFormView.as_view(),
+        view=fortunes.app.views.author.AuthorEditFormView.as_view(),
         name="author-edit",
     ),
 ]
