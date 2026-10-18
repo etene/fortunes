@@ -3,31 +3,32 @@
 
 {% block toolbar %}
 
-<a class="btn btn-outline-secondary" role="button" data-bs-toggle="collapse" data-bs-target="#searchForm,#viewFilters,#hideFilters" aria-expanded="false" aria-controls="searchForm">
-    <span id="viewFilters" class="collapse {% if not display_search_form %}show{% endif %}">
-      <i class="bi bi-eye"></i>&nbsp;Afficher les filtres
-    </span>
-    <span id="hideFilters" class="collapse {% if display_search_form %}show{% endif %}">
-      <i class="bi bi-eye-slash"></i>&nbsp;Masquer les filtres
-    </span>
+<a class="btn btn-outline-secondary" role="button" data-bs-toggle="collapse"
+  data-bs-target="#searchForm,#viewFilters,#hideFilters" aria-expanded="false" aria-controls="searchForm">
+  <span id="viewFilters" class="collapse {% if not display_search_form %}show{% endif %}">
+    <i class="bi bi-eye"></i>&nbsp;Afficher les filtres
+  </span>
+  <span id="hideFilters" class="collapse {% if display_search_form %}show{% endif %}">
+    <i class="bi bi-eye-slash"></i>&nbsp;Masquer les filtres
+  </span>
 </a>
 {% endblock %}
 
 {% block content %}
 <div class="row">
-  <div class="col" >
-      <div class="card collapse{% if display_search_form %} show{% endif %}" id="searchForm">
-          <div class="card-body">
-            <form method="get" class="form">
-            {% bootstrap_form search_form layout="horizontal" %}
-            <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i>&nbsp;Chercher</button>
-            </form>
-          </div>
+  <div class="col">
+    <div class="card collapse{% if display_search_form %} show{% endif %}" id="searchForm">
+      <div class="card-body">
+        <form method="get" class="form">
+          {% bootstrap_form search_form layout="horizontal" %}
+          <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i>&nbsp;Chercher</button>
+        </form>
       </div>
+    </div>
   </div>
 </div>
 {% for fortune in fortunes %}
-<div class="row" style="width: 100%;">
+<div class="row">
   <div class="col">
     <!-- Card with the fortune -->
     {% include "fortune_card.html" %}

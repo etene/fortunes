@@ -18,12 +18,21 @@
 
 <div class="row">
     <div class="col">
-
-        <form method="post" class="form">
-        {% csrf_token %}
-        {% bootstrap_form form %}
-        {% bootstrap_button button_type="submit" content="Enregistrer" %}
-        </form>
-
+        <div class="card shadow m-3">
+            <div class="card-header">
+                {% if instance %}
+                <i class="bi bi-pencil-square"></i>&nbsp; Modifier les informations de {{ instance.name }}
+                {% else %}
+                <i class="bi bi-person-plus"></i>&nbsp; Nouveau poète
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <form method="post" class="form">
+                {% csrf_token %}
+                {% bootstrap_form form %}
+                {% bootstrap_button button_type="submit" content="Enregistrer" %}
+                </form>
+            </div>
+        </div>
 </div>
 {% endblock %}
