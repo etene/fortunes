@@ -27,17 +27,17 @@
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{% url 'new-fortune' %}" title="Soumettre une nouvelle citation">
-              <i class="bi bi-plus-circle"></i>&nbsp;Nouveau
+              <i class="bi bi-plus-circle text-success"></i>&nbsp;Nouveau
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{% url 'fortune-trashcan' %}" title="Voir les citations supprimées">
-              <i class="bi bi-trash3"></i>&nbsp;Corbeille
+              <i class="bi bi-trash3 text-danger"></i>&nbsp;Corbeille
             </a>
           </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Créer et modifier les auteurs">
-              <i class="bi bi-person-gear"></i>&nbsp;Poètes
+              <i class="bi bi-person-gear text-info"></i>&nbsp;Poètes
             </a>
             <ul class="dropdown-menu">
               {% if not authors %}
@@ -52,7 +52,7 @@
               {% endfor %}
               <li><hr class="dropdown-divider"></li>
                 <li>
-                <a class="dropdown-item text-muted" href="/author/new" title="Déclarer un nouvel auteur"><i class="bi bi-person-plus"></i>&nbsp;Ajouter</a>
+                <a class="dropdown-item" href="/author/new" title="Déclarer un nouvel auteur"><i class="bi bi-person-plus"></i>&nbsp;Ajouter</a>
               </li>
             </ul>
           </li>
