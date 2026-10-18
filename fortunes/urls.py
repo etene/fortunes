@@ -85,4 +85,9 @@ urlpatterns = [
         view=fortunes.app.views.author.AuthorCreateFormView.as_view(),
         name="author-create",
     ),
+    path(
+        route="author/<int:pk>/thumbnail/",
+        view=fortunes.app.views.author.author_thumbnail,
+        name="author-thumbnail",
+    ),
 ]

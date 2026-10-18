@@ -27,7 +27,7 @@ class Command(BaseCommand):
                 assert date_match, f"no date for {line!r} !"
                 date_parts = {k: int(v) for k, v in date_match.groupdict().items()}
                 if (year := date_parts["year"]) < 100:
-                    if year < datetime.now().date().year - 2000:
+                    if year < datetime.now().date().year - 1999:
                         date_parts["year"] += 2000
                     else:
                         date_parts["year"] += 1900
