@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.http import (
     HttpRequest,
     HttpResponse,
@@ -61,15 +62,27 @@ async def random_image(request: HttpRequest, fortune_id: int) -> HttpResponse:
 
 async def single_fortune(request: HttpRequest, fortune_id: int):
     fortune = await aget_object_or_404(Fortune.objects.with_authors(), pk=fortune_id)
-    context = {"fortune": fortune, "display_images": True}
+    context = {
+        "fortune": fortune,
+        "display_images": True,
+        "authors": [i async for i in Author.objects.all()],
+    }
     return render(request, "app/detail.html", context)
 
 
 async def fortune_trashcan(request: HttpRequest) -> HttpResponse:
+    # TODO: factorize with fortune_list
+    fortune_qs = Fortune.objects.trashed().with_authors().latest_first()
+    fortune_filter = await build_fortune_filter(
+        data=request.GET,
+        queryset=fortune_qs,
+    )
     context = {
-        "fortunes": [
-            i async for i in Fortune.objects.trashed().with_authors().latest_first()
-        ]
+        "fortunes": [i async for i in fortune_filter.qs],
+        "search_form": fortune_filter.form,
+        "display_search_form": fortune_filter.data
+        and any(fortune_filter.data.values()),
+        "authors": [i async for i in Author.objects.all()],  # TODO factorize
     }
     return render(request, "app/fortune_list.html", context)
 
@@ -80,9 +93,29 @@ async def fortune_list(request: HttpRequest) -> HttpResponse:
         data=request.GET,
         queryset=fortune_qs,
     )
+    filtered_fortunes = [i async for i in fortune_filter.qs]
+    searched = fortune_filter.data and any(fortune_filter.data.values())
+    if result_count := len(filtered_fortunes):
+        if searched:
+            messages.add_message(
+                request=request,
+                level=messages.SUCCESS,
+                message=f"{result_count} citations trouvées",
+                extra_tags="info",
+            )
+    else:
+        messages.add_message(
+            request=request,
+            level=messages.WARNING,
+            message="Aucune citation trouvée",
+            extra_tags="warning",
+        )
+
     context = {
-        "fortunes": [i async for i in fortune_filter.qs],
+        "fortunes": filtered_fortunes,
         "search_form": fortune_filter.form,
+        "display_search_form": searched,
+        "authors": [i async for i in Author.objects.all()],  # TODO factorize
     }
     return render(request, "app/fortune_list.html", context)
 

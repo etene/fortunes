@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, ClassVar
 from django.contrib import messages
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -19,7 +19,7 @@ class BaseFortunesView(View):
         return {"authors": [i async for i in Author.objects.all()]}
 
 
-class BaseFortunesFormView[ModelT: Model](BaseFortunesView):
+class BaseFortunesFormView[ModelT: Model](ABC, BaseFortunesView):
 
     template: ClassVar[str]
 

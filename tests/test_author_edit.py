@@ -15,7 +15,7 @@ async def test_edit_author_no_changes(
 ):
     assert author.birthday
     response = await async_client.post(
-        f"/author/{author.id}/",
+        f"/author/{author.id}/edit",
         data={
             "name": author.name,
             "birthday": author.birthday.strftime("%Y-%m-%d"),

@@ -1,59 +1,73 @@
 {# Load the tag library #}
 {% load django_bootstrap5 %}
 
-
+<!DOCTYPE html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fortunes</title>
   {# Load CSS and JavaScript #}
   {% bootstrap_css %}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.2/font/bootstrap-icons.min.css">
   {% bootstrap_javascript %}
 </head>
 
 <body>
-
   <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
-      <a class="navbar-brand" href="/">Fortunes</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+      <a class="navbar-brand" href="/browse" title="Parcourir les citations">
+        <i class="bi bi-chat-quote"></i>&nbsp;Fortunes
+      </a>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <ul class="navbar-nav me-auto mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{% url 'random-fortune' %}">Au hasard</a>
+            <a class="nav-link active" aria-current="page" href="{% url 'random-fortune' %}" title="Une citation au hasard">
+              <i class="bi bi-dice-3"></i>&nbsp;Au hasard
+            </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'new-fortune' %}">Nouveau</a>
+            <a class="nav-link" href="{% url 'new-fortune' %}" title="Soumettre une nouvelle citation">
+              <i class="bi bi-plus-circle"></i>&nbsp;Nouveau
+            </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'fortune-trashcan' %}">Corbeille</a>
+            <a class="nav-link" href="{% url 'fortune-trashcan' %}" title="Voir les citations supprimées">
+              <i class="bi bi-trash3"></i>&nbsp;Corbeille
+            </a>
           </li>
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Poètes
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Créer et modifier les auteurs">
+              <i class="bi bi-person-gear"></i>&nbsp;Poètes
             </a>
-            <!-- TODO disable when no authors-->
             <ul class="dropdown-menu">
+              {% if not authors %}
+              <li class="dropdown-item disabled text-muted">
+                Aucun pour le moment...
+              </li>
+              {% endif %}
               {% for author in authors %}
-              <li><a class="dropdown-item" href="/author/{{ author.id }}">{{ author.name }}</a></li>
+              <li>
+                <a class="dropdown-item" href="/author/{{ author.id }}/edit" title="Modifier les informations de {{ author.name }}"><i class="bi bi-pencil-square"></i>&nbsp;{{ author.name }}</a>
+              </li>
               {% endfor %}
+              <li><hr class="dropdown-divider"></li>
+                <li>
+                <a class="dropdown-item text-muted" href="/author/new" title="Déclarer un nouvel auteur"><i class="bi bi-person-plus"></i>&nbsp;Ajouter</a>
+              </li>
             </ul>
           </li>
         </ul>
-        <form class="d-flex" role="search">
-          <input class="form-control me-2" type="search" placeholder="Chercher" aria-label="Search" />
-          <button class="btn btn-outline-success" type="submit">Chercher</button>
-        </form>
+          {% block toolbar %}
+          {% endblock %}
       </div>
     </div>
   </nav>
+
   {% bootstrap_messages %}
-  <div class="container-fluid">
+
+  <div class="container">
     {% block content %}
     {% endblock %}
   </div>
 
-  {# Read the documentation for more information #}
+</body>

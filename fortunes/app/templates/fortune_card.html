@@ -1,24 +1,37 @@
 {% load markdownify %}
 
-<div class="card shadow w-75 m-4">
+<div class="card shadow m-3">
     <div class="card-header">
         <ul class="nav nav-pills card-header-pills">
             <li class="nav-item">
-                <a class="nav-link active" href="{% url 'fortune-detail' fortune.id %}"><span class="font-monospace">#{{fortune.id }}</span></a>
+                <a class="nav-link active" href="{% url 'fortune-detail' fortune.id %}"><i class="bi bi-chat-quote"></i><span class="font-monospace">&nbsp;{{fortune.id }}</span></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link disabled" aria-disabled="true"><span class="fw-light">{{ fortune.date }}</span></a>
+                <a class="nav-link disabled" aria-disabled="true"><span class="fw-light"><i class="bi bi-calendar-event"></i>&nbsp;{{ fortune.date }}</span></a>
             </li>
             {% if fortune.hidden %}
             <li class="nav-item">
-                <a class="nav-link disabled" aria-disabled="true"><span class="fw-light fst-italic">Caché</span></a>
+                <a class="nav-link disabled" aria-disabled="true"><span class="fw-light fst-italic"><i class="bi bi-eye-slash"></i>&nbsp;Caché</span></a>
             </li>
             {% endif %}
             <li class="nav-item ms-auto">
-                <a class="nav-link" href="{% url 'fortune-delete' fortune.id %}">Supprimer{% if fortune.deleted %} définitivement{% endif %}</a>
-            </li>
-            <li class="nav-item ms-auto">
-                <a class="nav-link" href="{% url 'fortune-edit' fortune.id %}">Modifier</a>
+                <a class="btn nav-link" role="button" id="fortuneOptionsDropdownButton" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-gear"></i>
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="fortuneOptionsDropdownButton">
+                    <li>
+                        <a class="dropdown-item" href="{% url 'fortune-edit' fortune.id %}"><i class="bi bi-pencil"></i>&nbsp;Modifier</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#">
+                            <i class="bi bi-eye-slash"></i>&nbsp;Cacher
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item text-danger" href="{% url 'fortune-delete' fortune.id %}"><i class="bi bi-trash3"></i>&nbsp;Supprimer{% if fortune.deleted %} définitivement{% endif %}</a>
+                    </li>
+                </ul>
             </li>
         </ul>
 
@@ -28,7 +41,7 @@
     <div class="card-body">
         <figure class="text-center">
             <blockquote class="blockquote">
-                {{ fortune.text | markdownify }}
+                <i class="bi bi-quote"></i>&nbsp;{{ fortune.text | markdownify }}
             </blockquote>
             <figcaption class="blockquote-footer">
                 <i><span class="fst-italic">{{ fortune.author.name }}{% if fortune.author_age %}, {{ fortune.author_age }} ans{% endif %}</span></i>

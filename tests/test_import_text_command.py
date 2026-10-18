@@ -12,7 +12,7 @@ pytestmark = pytest.mark.django_db
 def test_import_fortunes_text(
     tmp_path: Path, fortune_factory: AsyncFactory[Fortune], date_format: str
 ):
-    fortunes_to_import = fortune_factory.build_batch(5)
+    fortunes_to_import = fortune_factory.build_batch(500)
     fortunes_text = "\n".join(
         (f"* {i.date.strftime(date_format)} {i.text}" for i in fortunes_to_import)  # type: ignore[union-attr]
     )
