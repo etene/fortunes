@@ -1,7 +1,6 @@
 {% extends "app/base.html" %}
 {% load django_bootstrap5 %}
 
-
 {% block content %}
 
 <div class="row">
@@ -23,7 +22,7 @@
                         <btn class="btn btn-outline-secondary me-2">
                             <i class="bi bi-eye-slash"></i>&nbsp;Cacher
                         </btn>
-                        <btn class="btn btn-outline-danger me-2">
+                        <btn class="btn btn-outline-danger me-2"  data-bs-toggle="modal" data-bs-target="#fortuneDeleteModal">
                             <i class="bi bi-trash3"></i>&nbsp;Supprimer
                         </btn>
                     </li>
@@ -39,4 +38,9 @@
             </div>
         </div>
 </div>
+
+{% if instance %}
+{% include "fortune_delete_modal.html" %}
+{% endif %}
+
 {% endblock %}

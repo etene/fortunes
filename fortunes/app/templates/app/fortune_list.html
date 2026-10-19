@@ -17,11 +17,27 @@
 {% block content %}
 <div class="row">
   <div class="col">
-    <div class="card collapse{% if display_search_form %} show{% endif %}" id="searchForm">
+    <div class="border border-info card shadow m-3 collapse{% if display_search_form %} show{% endif %}" id="searchForm">
+      <div class="card-header bg-info">
+        <ul class="nav nav-pills card-header-pills">
+          <li class="nav-item">
+            <a class="nav-link disabled">
+              <i class="bi bi-funnel"></i>&nbsp;Filtrer les citations
+            </a>
+          </li>
+          <li class="nav-item ms-auto">
+                <a class="btn nav-link" role="button" data-bs-toggle="collapse"
+                data-bs-target="#searchForm,#viewFilters,#hideFilters"
+                    aria-expanded="false" title="Masquer">
+                    <i class="bi bi-x-circle text-danger"></i>
+                </a>
+          </li>
+        </ul>
+      </div>
       <div class="card-body">
         <form method="get" class="form">
           {% bootstrap_form search_form layout="horizontal" %}
-          <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i>&nbsp;Chercher</button>
+          <button class="btn btn-info" type="submit"><i class="bi bi-search"></i>&nbsp;Chercher</button>
         </form>
       </div>
     </div>
