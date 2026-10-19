@@ -2,16 +2,10 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Confirmer la suppression</h5>
+        <h5 class="modal-title"></h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Annuler"></button>
       </div>
       <div class="modal-body">
-        <p>Voulez vous supprimer la citation #<a href="/{{ instance.id }}/">{{ instance.id }}</a> ?</p>
-        {% if instance.deleted %}
-        <p class="text-warning">Elle est déjà à la corbeille, cette action est donc définitive.</p>
-        {% else %}
-        <p class="text-muted">Elle sera placée dans la corbeille d'où vous pourrez la restaurer si besoin.</p>
-        {% endif %}
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Non</button>
@@ -20,3 +14,35 @@
     </div>
   </div>
 </div>
+
+<script>
+var fortuneDeleteModal = document.getElementById('fortuneDeleteModal')
+fortuneDeleteModal.addEventListener('show.bs.modal', function (event) {
+  var button = event.relatedTarget
+  var fortune_id = button.getAttribute('data-bs-fortune-id')
+  var deleted = button.getAttribute("data-bs-fortune-deleted") === "True"
+  var modalTitle = fortuneDeleteModal.querySelector('.modal-title')
+  modalTitle.textContent = "Confirmer la suppression" 
+  var modalBody = fortuneDeleteModal.querySelector('.modal-body')
+  modalBody.innerText = ""
+  var confirmMessage = document.createElement("p")
+  confirmMessage.appendChild(new Text("Voulez vous supprimer la citation #"))
+  confirmMessageLink = document.createElement("a")
+  confirmMessageLink["href"] = `/${fortune_id}/`
+  confirmMessageLink.textContent = fortune_id
+  confirmMessage.appendChild(confirmMessageLink)
+  confirmMessage.appendChild(new Text(" ?"))
+  modalBody.appendChild(confirmMessage)
+  var confirmExtra = document.createElement("p")
+  if (deleted) {
+      modalTitle.textContent += " définitive"
+      confirmExtra.className = "text-warning"
+      confirmExtra.innerText = "Elle est déjà à la corbeille, cette action est donc définitive."
+    } else {
+        confirmExtra.className = "text-muted"
+        confirmExtra.innerText = "Elle sera placée dans la corbeille d'où vous pourrez la restaurer si besoin."
+    }
+    modalBody.appendChild(confirmExtra)
+})
+
+</script>
