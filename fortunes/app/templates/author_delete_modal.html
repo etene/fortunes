@@ -9,7 +9,10 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-        <button type="button" class="btn btn-danger">Supprimer</button>
+        <form action="#" method="post">
+          {% csrf_token %}
+          <input type="submit" class="btn btn-danger" id="authorDeleteButton" name="authorDeleteButton" value="Supprimer" />
+      </form>
       </div>
     </div>
   </div>
@@ -18,15 +21,18 @@
 <script>
 var authorDeleteModal = document.getElementById('authorDeleteModal')
 authorDeleteModal.addEventListener('show.bs.modal', function (event) {
-  var button = event.relatedTarget
-  var author_id = button.getAttribute('data-bs-author-id')
-  var author_name = button.getAttribute("data-bs-author-name")
+  var triggerBtn = event.relatedTarget
+  var author_id = triggerBtn.getAttribute('data-bs-author-id')
+  var author_name = triggerBtn.getAttribute("data-bs-author-name")
   var modalTitle = authorDeleteModal.querySelector('.modal-title')
   modalTitle.textContent = "Confirmer la suppression" 
   var modalBody = authorDeleteModal.querySelector('.modal-body')
+  modalBody.innerText = ""
   var confirmMessage = document.createElement("p")
   confirmMessage.innerText = `Supprimer ${author_name} ? Cela ne fonctionnera pas s'il a des citations.`
   modalBody.appendChild(confirmMessage)
+  var deleteBtnForm = authorDeleteModal.querySelector(".modal-footer").querySelector("form")
+  deleteBtnForm["action"] = `/author/${author_id}/delete/`
 })
 
 </script>

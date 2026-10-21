@@ -17,7 +17,7 @@ class BaseFortunesView[ModelT: Model](ABC, View):
 
     @classmethod
     def get_model_class(cls) -> type[ModelT]:
-        return cls.__orig_bases__[0].__args__[0]
+        return cls.__orig_bases__[0].__args__[0]  # type: ignore[attr-defined]
 
     async def get_context_data(self) -> dict[str, Any]:
         return {"authors": [i async for i in Author.objects.all()]}
@@ -28,8 +28,15 @@ class BaseFortunesDeleteView[ModelT: Model](BaseFortunesView):
     DELETION_SUCCESS_MSG: ClassVar[str] = "L'objet a été supprimé"
     NOT_FOUND_MSG: ClassVar[str] = "Aucun objet correspondant à supprimer"
 
-    async def perform_deletion(self, instance: ModelT):
+    async def perform_deletion(self, instance: ModelT) -> bool:
         await instance.adelete()
+        messages.add_message(
+            request=self.request,
+            level=messages.SUCCESS,
+            message=self.DELETION_SUCCESS_MSG.format(instance=instance),
+            extra_tags="success",
+        )
+        return True
 
     async def post(self, request: HttpRequest, pk: int) -> HttpResponse:
         model_cls = self.get_model_class()
@@ -44,12 +51,6 @@ class BaseFortunesDeleteView[ModelT: Model](BaseFortunesView):
             )
             return HttpResponseRedirect(redirect_to="/")
         await self.perform_deletion(instance)
-        messages.add_message(
-            request=request,
-            level=messages.SUCCESS,
-            message=self.DELETION_SUCCESS_MSG,
-            extra_tags="success",
-        )
         return HttpResponseRedirect(redirect_to=request.GET.get("next", "/"))
 
 

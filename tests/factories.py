@@ -50,6 +50,7 @@ class AuthorFactory(DjangoModelFactory[Author]):
     class Meta:
         model = Author
 
+    id = Faker("random_int")
     name = Faker("first_name")
     birthday = Faker("past_date", tzinfo=UTC)
     immich_id = Faker("uuid4", cast_to=None)
@@ -59,6 +60,7 @@ class FortuneFactory(DjangoModelFactory[Fortune]):
     class Meta:
         model = Fortune
 
+    id = Faker("random_int")
     author = SubFactory(AuthorFactory)
     text = Faker("paragraph")
     date = Faker("date_object")

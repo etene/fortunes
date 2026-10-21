@@ -1,3 +1,5 @@
+from django.contrib import messages
+from django.db.models import ProtectedError
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import aget_object_or_404
 from fortunes import immich
@@ -40,5 +42,17 @@ async def author_thumbnail(request: HttpRequest, pk: int):
 
 
 class AuthorDeleteView(BaseFortunesDeleteView[Author]):
-    DELETION_SUCCESS_MSG = "L'auteur a été supprimé"
+    DELETION_SUCCESS_MSG = "L'auteur {instance.name!r} a été supprimé"
     NOT_FOUND_MSG = "Aucun auteur correspondant trouvé"
+
+    async def perform_deletion(self, instance: Author) -> bool:
+        try:
+            return await super().perform_deletion(instance)
+        except ProtectedError:
+            messages.add_message(
+                request=self.request,
+                level=messages.ERROR,
+                message=f"Impossible de supprimer {instance.name}, qui a encore des citations.",
+                extra_tags="error",
+            )
+            return False
