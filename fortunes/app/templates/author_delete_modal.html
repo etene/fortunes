@@ -1,0 +1,32 @@
+<div class="modal fade" tabindex="-1" id="authorDeleteModal" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Annuler"></button>
+      </div>
+      <div class="modal-body">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-danger">Supprimer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var authorDeleteModal = document.getElementById('authorDeleteModal')
+authorDeleteModal.addEventListener('show.bs.modal', function (event) {
+  var button = event.relatedTarget
+  var author_id = button.getAttribute('data-bs-author-id')
+  var author_name = button.getAttribute("data-bs-author-name")
+  var modalTitle = authorDeleteModal.querySelector('.modal-title')
+  modalTitle.textContent = "Confirmer la suppression" 
+  var modalBody = authorDeleteModal.querySelector('.modal-body')
+  var confirmMessage = document.createElement("p")
+  confirmMessage.innerText = `Supprimer ${author_name} ? Cela ne fonctionnera pas s'il a des citations.`
+  modalBody.appendChild(confirmMessage)
+})
+
+</script>

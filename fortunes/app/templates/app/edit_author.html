@@ -19,7 +19,11 @@
                     </li>
                     {% if instance %}
                     <li class="nav-item ms-auto">
-                        <btn class="btn btn-outline-danger me-2">
+                        <btn class="btn btn-outline-danger me-2"
+                             data-bs-toggle="modal"
+                             data-bs-target="#authorDeleteModal"
+                             data-bs-author-id="{{ instance.id }}"
+                             data-bs-author-name="{{ instance.name }}"
                             <i class="bi bi-trash3"></i>&nbsp;Supprimer
                         </btn>   
                     </li>
@@ -35,4 +39,9 @@
             </div>
         </div>
 </div>
+
+{% if instance %}
+{% include "author_delete_modal.html" %}
+{% endif %}
+
 {% endblock %}

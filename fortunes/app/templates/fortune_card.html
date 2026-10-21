@@ -38,7 +38,12 @@
                         <hr class="dropdown-divider">
                     </li>
                     <li>
-                        <a class="dropdown-item text-danger" href="{% url 'fortune-delete' fortune.id %}">
+                        <a class="dropdown-item text-danger"
+                           data-bs-toggle="modal"
+                           data-bs-target="#fortuneDeleteModal",
+                           data-bs-fortune-id="{{ fortune.id }}",
+                           data-bs-fortune-deleted="{{ fortune.deleted }}"
+                        >
                             <i class="bi bi-trash3"></i>&nbsp;Supprimer{% if fortune.deleted %} définitivement{% endif %}</a>
                     </li>
                 </ul>
@@ -65,3 +70,5 @@
         title="{{ fortune.author.name }} en {{ fortune.date.year }}">
     {% endif %}
 </div>
+
+{% include "fortune_delete_modal.html" %}
