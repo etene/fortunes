@@ -13,13 +13,47 @@ if TYPE_CHECKING:
     from django.db.models import Model, QuerySet
 
 
-class BaseFortunesView(View):
+class BaseFortunesView[ModelT: Model](ABC, View):
+
+    @classmethod
+    def get_model_class(cls) -> type[ModelT]:
+        return cls.__orig_bases__[0].__args__[0]
 
     async def get_context_data(self) -> dict[str, Any]:
         return {"authors": [i async for i in Author.objects.all()]}
 
 
-class BaseFortunesFormView[ModelT: Model](ABC, BaseFortunesView):
+class BaseFortunesDeleteView[ModelT: Model](BaseFortunesView):
+
+    DELETION_SUCCESS_MSG: ClassVar[str] = "L'objet a été supprimé"
+    NOT_FOUND_MSG: ClassVar[str] = "Aucun objet correspondant à supprimer"
+
+    async def perform_deletion(self, instance: ModelT):
+        await instance.adelete()
+
+    async def post(self, request: HttpRequest, pk: int) -> HttpResponse:
+        model_cls = self.get_model_class()
+        try:
+            instance = await model_cls.objects.aget(pk=pk)
+        except model_cls.DoesNotExist:
+            messages.add_message(
+                request=request,
+                level=messages.ERROR,
+                message=self.NOT_FOUND_MSG,
+                extra_tags="error",
+            )
+            return HttpResponseRedirect(redirect_to="/")
+        await self.perform_deletion(instance)
+        messages.add_message(
+            request=request,
+            level=messages.SUCCESS,
+            message=self.DELETION_SUCCESS_MSG,
+            extra_tags="success",
+        )
+        return HttpResponseRedirect(redirect_to=request.GET.get("next", "/"))
+
+
+class BaseFortunesFormView[ModelT: Model](BaseFortunesView):
 
     template: ClassVar[str]
 
@@ -95,7 +129,7 @@ class BaseEditFormView[ModelT: Model](BaseFortunesFormView):
                     request=request,
                     level=messages.SUCCESS,
                     message=f"{instance._meta.model_name} updated successfully",
-                    extra_tags="info",
+                    extra_tags="success",
                 )
             else:
                 messages.add_message(

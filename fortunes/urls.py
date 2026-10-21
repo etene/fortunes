@@ -90,4 +90,9 @@ urlpatterns = [
         view=fortunes.app.views.author.author_thumbnail,
         name="author-thumbnail",
     ),
+    path(
+        route="author/<int:pk>/delete/",
+        view=fortunes.app.views.author.AuthorDeleteView.as_view(),
+        name="author-delete",
+    ),
 ]
