@@ -1,13 +1,35 @@
 import django_filters
-from django_filters import widgets
+import django_filters.widgets
 
+from fortunes.app.forms.base import FortuneDateInput
 from fortunes.app.models import Author, Fortune
 
 
 class BaseFortuneFilter(django_filters.FilterSet):
-    date = django_filters.DateFilter(label="Date")
-    hidden = django_filters.BooleanFilter(widget=widgets.BooleanWidget(), label="Caché")
-    text = django_filters.CharFilter(lookup_expr="icontains", label="Texte")
+    start_date = django_filters.DateFilter(
+        label="À partir du",
+        widget=FortuneDateInput(format="%Y-%m-%d"),
+        method="filter_date",
+    )
+    end_date = django_filters.DateFilter(
+        label="Jusqu'au",
+        widget=FortuneDateInput(format="%Y-%m-%d"),
+        method="filter_date",
+    )
+    hidden = django_filters.BooleanFilter(
+        widget=django_filters.widgets.BooleanWidget(),
+        label="Caché ?",
+    )
+    text = django_filters.CharFilter(
+        lookup_expr="icontains",
+        label="Contient",
+    )
+
+    def filter_date(self, queryset, field_name, value):
+        model_filter_name = {"start_date": "date__gt", "end_date": "date__lt"}[
+            field_name
+        ]
+        return queryset.filter(**{model_filter_name: value})
 
     class Meta:
         model = Fortune
