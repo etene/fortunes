@@ -1,4 +1,6 @@
 from django.contrib import messages
+from django.core.paginator import AsyncPaginator
+
 from django.http import (
     HttpRequest,
     HttpResponse,
@@ -93,9 +95,10 @@ async def fortune_list(request: HttpRequest) -> HttpResponse:
         data=request.GET,
         queryset=fortune_qs,
     )
-    filtered_fortunes = [i async for i in fortune_filter.qs]
+    paginator = AsyncPaginator(fortune_filter.qs, per_page=20)
+    page = await paginator.aget_page(request.GET.get("page"))
     searched = fortune_filter.data and any(fortune_filter.data.values())
-    if result_count := len(filtered_fortunes):
+    if result_count := await fortune_filter.qs.acount():
         if searched:
             messages.add_message(
                 request=request,
@@ -103,6 +106,14 @@ async def fortune_list(request: HttpRequest) -> HttpResponse:
                 message=f"{result_count} citations trouvées",
                 extra_tags="info",
             )
+        pages = [
+            i
+            async for i in paginator.aget_elided_page_range(  # type: ignore[attr-defined]
+                number=page.number,
+                on_each_side=3,
+                on_ends=2,
+            )
+        ]
     else:
         messages.add_message(
             request=request,
@@ -110,12 +121,16 @@ async def fortune_list(request: HttpRequest) -> HttpResponse:
             message="Aucune citation trouvée",
             extra_tags="warning",
         )
+        pages = None
 
     context = {
-        "fortunes": filtered_fortunes,
+        "fortunes": [i async for i in page],
         "search_form": fortune_filter.form,
         "display_search_form": searched,
         "authors": [i async for i in Author.objects.all()],  # TODO factorize
+        "pages": pages,
+        "current_page": page.number,
+        "ellipsis": paginator.ELLIPSIS,
     }
     return render(request, "app/fortune_list.html", context)
 

@@ -52,4 +52,22 @@
   </div>
 </div>
 {% endfor %}
+
+{% if pages %}
+<nav aria-label="Navigation">
+  <ul class="pagination pagination-lg justify-content-center">
+    {% for page_number in pages %}
+    <li class="page-item">
+      {% if page_number == ellipsis %}
+      <span class="page-link text-muted">{{ page_number }}</span></li>
+      {% elif page_number == current_page %}
+      <span class="page-link active">{{ page_number }}</span></li>
+      {% else %}
+      <a class="page-link" href="{% querystring page=page_number %}">{{ page_number }}</a></li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+</nav>
+{% endif %}
+
 {% endblock %}
