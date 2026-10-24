@@ -102,7 +102,7 @@ async def fortune_list(request: HttpRequest) -> HttpResponse:
         if searched:
             messages.add_message(
                 request=request,
-                level=messages.SUCCESS,
+                level=messages.INFO,
                 message=f"{result_count} citations trouvées",
                 extra_tags="info",
             )

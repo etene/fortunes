@@ -1,9 +1,9 @@
+from datetime import date
 from http import HTTPStatus
 import re
 from django.contrib import messages
 import pytest
 from django.test import AsyncClient
-
 from fortunes.app.models import Author, Fortune
 from tests.factories import AsyncFactory
 from tests.tools import assert_message, match_html_elements
@@ -37,7 +37,7 @@ async def test_filter_fortunes_by_author(
     assert_message(
         response,
         message="3 citations trouvées",
-        level=messages.SUCCESS,
+        level=messages.INFO,
     )
 
 
@@ -54,7 +54,42 @@ async def test_search_fortune_text(
     assert fortune.text in html
 
 
+@pytest.mark.parametrize(
+    ("query_params", "expected_fortune_years"),
+    (
+        ({"start_date": "2022-01-02"}, {2024, 2026}),
+        ({"start_date": "2025-12-22"}, {2026}),
+        ({"end_date": "2025-02-06"}, {2020, 2024}),
+        ({"start_date": "2021-10-31", "end_date": "2025-01-01"}, {2024}),
+    ),
+)
 async def test_search_fortunes_by_date(
     fortune_factory: AsyncFactory[Fortune],
+    async_client: AsyncClient,
+    query_params: dict[str, str],
+    expected_fortune_years: set[int],
 ):
-    pass
+    fortunes_by_year: dict[int, Fortune] = {
+        2020: await fortune_factory(
+            date=date(year=2020, month=6, day=23), text="2020 fortune"
+        ),
+        2024: await fortune_factory(
+            date=date(year=2024, month=4, day=20), text="2024 fortune"
+        ),
+        2026: await fortune_factory(
+            date=date(year=2026, month=12, day=30), text="2026 fortune"
+        ),
+    }
+    response = await async_client.get("/browse/", query_params=query_params)
+    assert response.status_code == HTTPStatus.OK
+    assert_message(
+        response,
+        level=messages.INFO,
+        message=f"{len(expected_fortune_years)} citations trouvées",
+    )
+    html = response.content.decode()
+    for year, fortune in fortunes_by_year.items():
+        if year in expected_fortune_years:
+            assert fortune.text in html
+        else:
+            assert fortune.text not in html
