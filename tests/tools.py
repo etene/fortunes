@@ -4,6 +4,10 @@ from html.parser import HTMLParser
 from re import Pattern
 from collections import deque
 
+from django.contrib import messages
+from django.contrib.messages import get_messages
+from django.contrib.messages.storage.base import Message
+
 
 @dataclass
 class HTMLElement:
@@ -75,3 +79,26 @@ def match_html_elements(
             len(matches) == expected_matches
         ), f"Got {len(matches)} matching elements, expected {expected_matches}"
     return matches
+
+
+def assert_message(
+    response,
+    message: str,
+    level: int = messages.INFO,
+    extra_tags: str | None = None,
+):
+    extra_tags_for_level = {
+        messages.INFO: "info",
+        messages.ERROR: "error",
+        messages.WARNING: "warning",
+        messages.SUCCESS: "success",
+    }
+    if extra_tags is None:
+        extra_tags = extra_tags_for_level[level]
+    response_messages = list(get_messages(response.asgi_request))
+    message_to_find = Message(
+        level=level,
+        message=message,
+        extra_tags=extra_tags_for_level[level],
+    )
+    assert message_to_find in response_messages

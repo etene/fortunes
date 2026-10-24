@@ -1,11 +1,12 @@
 from http import HTTPStatus
 import re
+from django.contrib import messages
 import pytest
 from django.test import AsyncClient
 
 from fortunes.app.models import Author, Fortune
 from tests.factories import AsyncFactory
-from tests.tools import match_html_elements
+from tests.tools import assert_message, match_html_elements
 
 pytestmark = [pytest.mark.django_db(transaction=True), pytest.mark.asyncio]
 
@@ -33,6 +34,11 @@ async def test_filter_fortunes_by_author(
     assert {i.content_lines[0] for i in fortune_id_spans} == {
         f"\xa0{i.id}" for i in author1_fortunes
     }
+    assert_message(
+        response,
+        message="3 citations trouvées",
+        level=messages.SUCCESS,
+    )
 
 
 async def test_search_fortune_text(
@@ -46,3 +52,9 @@ async def test_search_fortune_text(
     html = response.content.decode()
     assert other_fortune.text not in html
     assert fortune.text in html
+
+
+async def test_search_fortunes_by_date(
+    fortune_factory: AsyncFactory[Fortune],
+):
+    pass

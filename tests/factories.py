@@ -31,21 +31,24 @@ class AsyncFactory[FortunesModelT: Model]():
     def model(self) -> type[FortunesModelT]:
         return self.factory_class._meta.model
 
-    async def build(self, **overrides: Any) -> FortunesModelT:
-        return self.factory_class.build(**overrides)
+    async def _abuild(self, **overrides: Any) -> FortunesModelT:
+        instance = self.factory_class.build(**overrides)
+        if isinstance(instance, Fortune):
+            await instance.author.asave()
+        return instance
 
     async def create(self, **overrides: Any) -> FortunesModelT:
-        built = await self.build(**overrides)
-        # FIXME: this is a kludge
-        if isinstance(built, Fortune):
-            await built.author.asave()
+        built = await self._abuild(**overrides)
         await built.asave()
         return built
 
     __call__ = create
 
+    async def _abuild_batch(self, size: int, **kwargs) -> list[FortunesModelT]:
+        return [await self._abuild(**kwargs) for _ in range(size)]
+
     async def create_batch(self, size: int, **overrides: Any) -> list[FortunesModelT]:
-        created = self.factory_class.build_batch(size=size, **overrides)
+        created = await self._abuild_batch(size=size, **overrides)
         return await self.model.objects.abulk_create(objs=created)  # type: ignore[attr-defined]
 
     def build_batch(self, size: int, **kwargs: Any) -> list[FortunesModelT]:
