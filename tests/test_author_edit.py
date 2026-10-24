@@ -27,7 +27,7 @@ async def test_edit_author_no_changes(
     assert response_messages == [
         Message(
             level=messages.INFO,
-            message="No changes",
+            message="Aucune modification",
             extra_tags="info",
         ),
     ]

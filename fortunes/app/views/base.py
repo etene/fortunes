@@ -129,14 +129,14 @@ class BaseEditFormView[ModelT: Model](BaseFortunesFormView):
                 messages.add_message(
                     request=request,
                     level=messages.SUCCESS,
-                    message=f"{instance._meta.model_name} updated successfully",
+                    message=f"{instance._meta.model_name} modifié",
                     extra_tags="success",
                 )
             else:
                 messages.add_message(
                     request=request,
                     level=messages.INFO,
-                    message="No changes",
+                    message="Aucune modification",
                     extra_tags="info",
                 )
         else:
