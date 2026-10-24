@@ -31,10 +31,16 @@ class AsyncFactory[FortunesModelT: Model]():
     def model(self) -> type[FortunesModelT]:
         return self.factory_class._meta.model
 
+    async def build(self, **overrides: Any) -> FortunesModelT:
+        return self.factory_class.build(**overrides)
+
     async def create(self, **overrides: Any) -> FortunesModelT:
-        created = self.factory_class.build(**overrides)
-        await created.asave()
-        return created
+        built = await self.build(**overrides)
+        # FIXME: this is a kludge
+        if isinstance(built, Fortune):
+            await built.author.asave()
+        await built.asave()
+        return built
 
     __call__ = create
 
@@ -80,4 +86,4 @@ async def author(author_factory: AsyncFactory[Author]) -> Author:
 async def fortune(
     fortune_factory: AsyncFactory[Fortune], author_factory: AsyncFactory[Author]
 ) -> Fortune:
-    return await fortune_factory(author=await author_factory())
+    return await fortune_factory()

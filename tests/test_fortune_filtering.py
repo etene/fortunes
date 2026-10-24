@@ -28,8 +28,21 @@ async def test_filter_fortunes_by_author(
         tag="span",
         attrs={"class": "font-monospace"},
         contains=re.compile(r"^.*\d+$"),
+        expected_matches=3,
     )
-    assert len(fortune_id_spans) == 3
     assert {i.content_lines[0] for i in fortune_id_spans} == {
         f"\xa0{i.id}" for i in author1_fortunes
     }
+
+
+async def test_search_fortune_text(
+    fortune_factory: AsyncFactory[Fortune],
+    async_client: AsyncClient,
+):
+    fortune = await fortune_factory(text="un guéopard")
+    other_fortune = await fortune_factory()
+    response = await async_client.get("/browse/", query_params={"text": "guéopar"})
+    assert response.status_code == HTTPStatus.OK
+    html = response.content.decode()
+    assert other_fortune.text not in html
+    assert fortune.text in html
