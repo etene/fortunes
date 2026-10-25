@@ -42,12 +42,12 @@ urlpatterns = [
     ),
     path(
         route="browse/",
-        view=fortunes.app.views.fortune.fortune_list,
+        view=fortunes.app.views.fortune.FortuneListView.as_view(),
         name="fortune-list",
     ),
     path(
         route="trashcan/",
-        view=fortunes.app.views.fortune.fortune_trashcan,
+        view=fortunes.app.views.fortune.FortuneTrashcanView.as_view(),
         name="fortune-trashcan",
     ),
     path(

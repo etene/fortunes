@@ -1,6 +1,4 @@
-from django.contrib import messages
-from django.core.paginator import AsyncPaginator
-
+from django.db.models import QuerySet
 from django.http import (
     HttpRequest,
     HttpResponse,
@@ -15,7 +13,11 @@ from random import randint
 from datetime import UTC, datetime
 from fortunes.app.filters import build_fortune_filter
 from fortunes.app.forms.fortune import BaseFortuneForm, build_fortune_form_cls
-from fortunes.app.views.base import BaseCreateFormView, BaseEditFormView
+from fortunes.app.views.base import (
+    BaseCreateFormView,
+    BaseEditFormView,
+    BaseFortunesListView,
+)
 from fortunes.immich import get_random_image
 from fortunes.app.models import Author, Fortune
 
@@ -72,67 +74,26 @@ async def single_fortune(request: HttpRequest, fortune_id: int):
     return render(request, "app/detail.html", context)
 
 
-async def fortune_trashcan(request: HttpRequest) -> HttpResponse:
-    # TODO: factorize with fortune_list
-    fortune_qs = Fortune.objects.trashed().with_authors().latest_first()
-    fortune_filter = await build_fortune_filter(
-        data=request.GET,
-        queryset=fortune_qs,
-    )
-    context = {
-        "fortunes": [i async for i in fortune_filter.qs],
-        "search_form": fortune_filter.form,
-        "display_search_form": fortune_filter.data
-        and any(fortune_filter.data.values()),
-        "authors": [i async for i in Author.objects.all()],  # TODO factorize
-    }
-    return render(request, "app/fortune_list.html", context)
+class FortuneListView(BaseFortunesListView[Fortune]):
+
+    template = "app/fortune_list.html"
+
+    RESULTS_FOUND_MSG = "{result_count} citations trouvées"
+    NO_RESULTS_MSG = "Aucune citation trouvée"
+
+    async def get_filter(self, queryset: QuerySet[Fortune], request: HttpRequest):
+        return await build_fortune_filter(data=request.GET, queryset=queryset)
+
+    def get_queryset(self) -> QuerySet[Fortune]:
+        return super().get_queryset().with_authors().current().latest_first()  # type: ignore[attr-defined]
 
 
-async def fortune_list(request: HttpRequest) -> HttpResponse:
-    fortune_qs = Fortune.objects.with_authors().current().latest_first()
-    fortune_filter = await build_fortune_filter(
-        data=request.GET,
-        queryset=fortune_qs,
-    )
-    paginator = AsyncPaginator(fortune_filter.qs, per_page=20)
-    page = await paginator.aget_page(request.GET.get("page"))
-    searched = fortune_filter.data and any(fortune_filter.data.values())
-    if result_count := await fortune_filter.qs.acount():
-        if searched:
-            messages.add_message(
-                request=request,
-                level=messages.INFO,
-                message=f"{result_count} citations trouvées",
-                extra_tags="info",
-            )
-        pages = [
-            i
-            async for i in paginator.aget_elided_page_range(  # type: ignore[attr-defined]
-                number=page.number,
-                on_each_side=3,
-                on_ends=2,
-            )
-        ]
-    else:
-        messages.add_message(
-            request=request,
-            level=messages.WARNING,
-            message="Aucune citation trouvée",
-            extra_tags="warning",
-        )
-        pages = None
+class FortuneTrashcanView(FortuneListView):
+    RESULTS_FOUND_MSG = "{result_count} citations supprimées trouvées"
+    NO_RESULTS_MSG = "Aucune citation supprimée"
 
-    context = {
-        "fortunes": [i async for i in page],
-        "search_form": fortune_filter.form,
-        "display_search_form": searched,
-        "authors": [i async for i in Author.objects.all()],  # TODO factorize
-        "pages": pages,
-        "current_page": page.number,
-        "ellipsis": paginator.ELLIPSIS,
-    }
-    return render(request, "app/fortune_list.html", context)
+    def get_queryset(self) -> QuerySet[Fortune]:
+        return super().get_queryset().trashed().with_authors().latest_first()  # type: ignore[attr-defined]
 
 
 class FortuneEditFormView(BaseEditFormView[Fortune]):

@@ -1,11 +1,15 @@
 from abc import ABC, abstractmethod
+import abc
 from typing import TYPE_CHECKING, Any, ClassVar
 from django.contrib import messages
+from django.core.paginator import AsyncPage, AsyncPaginator
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import aget_object_or_404, render
 from django.views.generic import View
 import asyncio
 from http import HTTPStatus
+
+from django_filters import FilterSet
 from fortunes.app.models import Author
 
 if TYPE_CHECKING:
@@ -21,6 +25,70 @@ class BaseFortunesView[ModelT: Model](ABC, View):
 
     async def get_context_data(self) -> dict[str, Any]:
         return {"authors": [i async for i in Author.objects.all()]}
+
+
+class BaseFortunesListView[ModelT: Model](BaseFortunesView):
+
+    RESULTS_FOUND_MSG: ClassVar[str] = "{result_count} résultats"
+    NO_RESULTS_MSG: ClassVar[str] = "Aucun résultat"
+
+    template: ClassVar[str]
+
+    def get_queryset(self) -> QuerySet[ModelT]:
+        return self.get_model_class().objects.all()
+
+    @abc.abstractmethod
+    async def get_filter(
+        self, queryset: QuerySet[ModelT], request: HttpRequest
+    ) -> FilterSet: ...
+
+    async def get_page(self, queryset: QuerySet[ModelT]) -> AsyncPage[ModelT]:
+        paginator = AsyncPaginator(queryset, per_page=20)
+        return await paginator.aget_page(self.request.GET.get("page"))
+
+    async def get(self, request: HttpRequest):
+        queryset = self.get_queryset()
+        filter_ = await self.get_filter(queryset=queryset, request=request)
+        page = await self.get_page(filter_.qs)
+        searched = filter_.data and any(filter_.data.values())
+        pages = None
+
+        if result_count := await filter_.qs.acount():
+            if searched:
+                messages.add_message(
+                    request=request,
+                    level=messages.INFO,
+                    message=self.RESULTS_FOUND_MSG.format(result_count=result_count),
+                    extra_tags="info",
+                )
+            pages = [
+                i
+                async for i in page.paginator.aget_elided_page_range(  # type: ignore[attr-defined]
+                    number=page.number,
+                    on_each_side=3,
+                    on_ends=2,
+                )
+            ]
+        else:
+            messages.add_message(
+                request=request,
+                level=messages.WARNING,
+                message=self.NO_RESULTS_MSG,
+                extra_tags="warning",
+            )
+
+        context = await self.get_context_data()
+        context.update(
+            {
+                "search_form": filter_.form,
+                "display_search_form": searched,
+                "fortunes": [i async for i in page],
+                "pages": pages,
+                "current_page": page.number,
+                "ellipsis": page.paginator.ELLIPSIS,
+            }
+        )
+        return render(request, self.template, context)
 
 
 class BaseFortunesDeleteView[ModelT: Model](BaseFortunesView):
