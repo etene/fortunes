@@ -79,7 +79,7 @@ class FortuneListView(BaseFortunesListView[Fortune]):
 
     template = "app/fortune_list.html"
 
-    RESULTS_FOUND_MSG = "{result_count} citations trouvées"
+    RESULTS_FOUND_MSG = "{result_count} citation(s) trouvée(s)"
     NO_RESULTS_MSG = "Aucune citation trouvée"
 
     async def get_filter(self, queryset: QuerySet[Fortune], request: HttpRequest):
@@ -90,11 +90,11 @@ class FortuneListView(BaseFortunesListView[Fortune]):
 
 
 class FortuneTrashcanView(FortuneListView):
-    RESULTS_FOUND_MSG = "{result_count} citations supprimées trouvées"
+    RESULTS_FOUND_MSG = "{result_count} citation(s) supprimée(s) trouvée(s)"
     NO_RESULTS_MSG = "Aucune citation supprimée"
 
     def get_queryset(self) -> QuerySet[Fortune]:
-        return super().get_queryset().trashed().with_authors().latest_first()  # type: ignore[attr-defined]
+        return BaseFortunesListView.get_queryset(self).trashed().with_authors().latest_first()  # type: ignore[attr-defined]
 
 
 class FortuneEditFormView(BaseEditFormView[Fortune]):

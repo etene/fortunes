@@ -31,7 +31,7 @@ class BaseFortunesView[ModelT: Model](ABC, View):
 
 class BaseFortunesListView[ModelT: Model](BaseFortunesView):
 
-    RESULTS_FOUND_MSG: ClassVar[str] = "{result_count} résultats"
+    RESULTS_FOUND_MSG: ClassVar[str] = "{result_count} résultat(s)"
     NO_RESULTS_MSG: ClassVar[str] = "Aucun résultat"
 
     template: ClassVar[str]

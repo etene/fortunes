@@ -36,7 +36,7 @@ async def test_filter_fortunes_by_author(
     }
     assert_message(
         response,
-        message="3 citations trouvées",
+        message="3 citation(s) trouvée(s)",
         level=messages.INFO,
     )
 
@@ -61,6 +61,7 @@ async def test_search_fortune_text(
         ({"start_date": "2025-12-22"}, {2026}),
         ({"end_date": "2025-02-06"}, {2020, 2024}),
         ({"start_date": "2021-10-31", "end_date": "2025-01-01"}, {2024}),
+        ({"end_date": "2019-12-31"}, {}),
     ),
 )
 async def test_search_fortunes_by_date(
@@ -82,11 +83,18 @@ async def test_search_fortunes_by_date(
     }
     response = await async_client.get("/browse/", query_params=query_params)
     assert response.status_code == HTTPStatus.OK
-    assert_message(
-        response,
-        level=messages.INFO,
-        message=f"{len(expected_fortune_years)} citations trouvées",
-    )
+    if expected_fortune_years:
+        assert_message(
+            response,
+            level=messages.INFO,
+            message=f"{len(expected_fortune_years)} citation(s) trouvée(s)",
+        )
+    else:
+        assert_message(
+            response,
+            level=messages.WARNING,
+            message="Aucune citation trouvée",
+        )
     html = response.content.decode()
     for year, fortune in fortunes_by_year.items():
         if year in expected_fortune_years:
