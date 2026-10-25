@@ -30,7 +30,7 @@ class AuthorCreateFormView(BaseCreateFormView[Author]):
         return AuthorForm
 
     def get_redirect_path(self, instance: Author) -> str:
-        return f"/author/{instance.pk}/edit"
+        return f"/author/{instance.pk}/edit/"
 
 
 @cache_control(private=True, max_age=3600 * 24)

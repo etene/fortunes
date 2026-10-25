@@ -76,12 +76,12 @@ urlpatterns = [
         name="fortune-export",
     ),
     path(
-        route="author/<int:pk>/edit",
+        route="author/<int:pk>/edit/",
         view=fortunes.app.views.author.AuthorEditFormView.as_view(),
         name="author-edit",
     ),
     path(
-        route="author/new",
+        route="author/new/",
         view=fortunes.app.views.author.AuthorCreateFormView.as_view(),
         name="author-create",
     ),

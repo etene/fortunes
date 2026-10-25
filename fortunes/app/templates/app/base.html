@@ -50,12 +50,12 @@
               {% endif %}
               {% for author in authors %}
               <li>
-                <a class="dropdown-item" href="/author/{{ author.id }}/edit" title="Modifier les informations de {{ author.name }}"><i class="bi bi-pencil-square"></i>&nbsp;{{ author.name }}</a>
+                <a class="dropdown-item" href="/author/{{ author.id }}/edit/" title="Modifier les informations de {{ author.name }}"><i class="bi bi-pencil-square"></i>&nbsp;{{ author.name }}</a>
               </li>
               {% endfor %}
               <li><hr class="dropdown-divider"></li>
                 <li>
-                <a class="dropdown-item" href="/author/new" title="Déclarer un nouvel auteur"><i class="bi bi-person-plus"></i>&nbsp;Ajouter</a>
+                <a class="dropdown-item" href="/author/new/" title="Déclarer un nouvel auteur"><i class="bi bi-person-plus"></i>&nbsp;Ajouter</a>
               </li>
             </ul>
           </li>
