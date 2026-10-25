@@ -30,18 +30,16 @@
                                 class="bi bi-pencil"></i>&nbsp;Modifier</a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="#">
-                            <form action="{% url 'fortune-toggle-hidden' fortune.id %}" method="post">
-                                {% csrf_token %}
-                                <button type="submit" class="dropdown-item"  style="padding: 0;">
-                                    {% if fortune.hidden %}
-                                    <i class="bi bi-eye"></i>&nbsp;Montrer
-                                    {% else %}
-                                    <i class="bi bi-eye-slash"></i>&nbsp;Cacher
-                                    {% endif %}
-                                </button>
-                            </form>
-                        </a>
+                        <form class="dropdown-item" action="{% url 'fortune-toggle-hidden' fortune.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item" style="padding: 0;">
+                                {% if fortune.hidden %}
+                                <i class="bi bi-eye"></i>&nbsp;Montrer
+                                {% else %}
+                                <i class="bi bi-eye-slash"></i>&nbsp;Cacher
+                                {% endif %}
+                            </button>
+                        </form>
                     </li>
                     <li>
                         <hr class="dropdown-divider">
