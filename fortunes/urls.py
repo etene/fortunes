@@ -95,4 +95,9 @@ urlpatterns = [
         view=fortunes.app.views.author.AuthorDeleteView.as_view(),
         name="author-delete",
     ),
+    path(
+        route="<int:fortune_id>/toggle_hidden/",
+        view=fortunes.app.views.fortune.ToggleHiddenFortuneView.as_view(),
+        name="fortune-toggle-hidden",
+    ),
 ]

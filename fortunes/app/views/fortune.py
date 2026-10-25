@@ -1,3 +1,5 @@
+from django.contrib import messages
+from django.contrib.messages import add_message
 from django.db import IntegrityError
 from django.db.models import QuerySet
 from django.http import (
@@ -18,6 +20,7 @@ from fortunes.app.views.base import (
     BaseCreateFormView,
     BaseEditFormView,
     BaseFortunesListView,
+    BaseFortunesView,
 )
 from fortunes.immich import get_random_image
 from fortunes.app.models import Author, Fortune
@@ -131,6 +134,24 @@ async def delete_fortune(request: HttpRequest, fortune_id: int):
         await fortune.asave(update_fields=("deleted",))
 
     return HttpResponseRedirect(redirect_to=request.GET.get("next", "/"))
+
+
+class ToggleHiddenFortuneView(BaseFortunesView[Fortune]):
+    async def post(self, request: HttpRequest, fortune_id: int) -> HttpResponse:
+        fortune = await aget_object_or_404(Fortune, pk=fortune_id)
+        if fortune.hidden:
+            add_message(
+                request=request,
+                level=messages.INFO,
+                message="La citation n'est plus cachée",
+            )
+        else:
+            add_message(
+                request=request, level=messages.INFO, message="La citation a été cachée"
+            )
+        fortune.hidden = not fortune.hidden
+        await fortune.asave(update_fields=("hidden",))
+        return HttpResponseRedirect(f"/{fortune.id}/")
 
 
 async def fortune_export(request: HttpRequest):

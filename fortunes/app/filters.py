@@ -1,3 +1,5 @@
+from django.db.models import QuerySet
+from django.http import QueryDict
 import django_filters
 import django_filters.widgets
 
@@ -29,6 +31,7 @@ class BaseFortuneFilter(django_filters.FilterSet):
         model_filter_name = {"start_date": "date__gt", "end_date": "date__lt"}[
             field_name
         ]
+        self.form.initial
         return queryset.filter(**{model_filter_name: value})
 
     class Meta:
@@ -36,7 +39,9 @@ class BaseFortuneFilter(django_filters.FilterSet):
         fields: dict[str, str] = {}
 
 
-async def build_fortune_filter(data, queryset) -> BaseFortuneFilter:
+async def build_fortune_filter(
+    data: QueryDict, queryset: QuerySet[Fortune]
+) -> BaseFortuneFilter:
     author_choices: list[tuple[int | None, str]] = [(None, "Tous")]
     async for author_id, author_name in Author.objects.values_list("id", "name"):
         assert isinstance(author_id, int)
@@ -49,4 +54,13 @@ async def build_fortune_filter(data, queryset) -> BaseFortuneFilter:
             choices=author_choices,
         )
 
-    return FortuneFilter(data, queryset)
+    # There has to be a better way to set a default value
+    data._mutable = True
+    data.setdefault("hidden", "false")
+    data._mutable = False
+    filtr_ = FortuneFilter(data, queryset)
+    # Remove the empty option
+    filtr_.form.fields["hidden"].widget.choices.pop(0)
+    # Put false first
+    filtr_.form.fields["hidden"].widget.choices.reverse()
+    return filtr_

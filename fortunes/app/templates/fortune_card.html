@@ -15,7 +15,7 @@
             </li>
             {% if fortune.hidden %}
             <li class="nav-item">
-                <a class="nav-link disabled" aria-disabled="true"><span class="fw-light fst-italic"><i
+                <a class="nav-link disabled" aria-disabled="true" title="La citation n'est pas visible par défaut"><span class="fw-light fst-italic"><i
                             class="bi bi-eye-slash"></i>&nbsp;Caché</span></a>
             </li>
             {% endif %}
@@ -31,7 +31,16 @@
                     </li>
                     <li>
                         <a class="dropdown-item" href="#">
-                            <i class="bi bi-eye-slash"></i>&nbsp;Cacher
+                            <form action="{% url 'fortune-toggle-hidden' fortune.id %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item"  style="padding: 0;">
+                                    {% if fortune.hidden %}
+                                    <i class="bi bi-eye"></i>&nbsp;Montrer
+                                    {% else %}
+                                    <i class="bi bi-eye-slash"></i>&nbsp;Cacher
+                                    {% endif %}
+                                </button>
+                            </form>
                         </a>
                     </li>
                     <li>

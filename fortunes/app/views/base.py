@@ -52,6 +52,7 @@ class BaseFortunesListView[ModelT: Model](BaseFortunesView):
         queryset = self.get_queryset()
         filter_ = await self.get_filter(queryset=queryset, request=request)
         page = await self.get_page(filter_.qs)
+        # FIXME: ignore hidden field when it's false
         searched = filter_.data and any(filter_.data.values())
         pages = None
 

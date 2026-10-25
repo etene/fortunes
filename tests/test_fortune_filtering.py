@@ -101,3 +101,16 @@ async def test_search_fortunes_by_date(
             assert fortune.text in html
         else:
             assert fortune.text not in html
+
+
+async def test_hidden_fortunes_not_visible(
+    fortune_factory: AsyncFactory[Fortune],
+    async_client: AsyncClient,
+):
+    fortune = await fortune_factory()
+    hidden_fortune = await fortune_factory(hidden=True)
+    response = await async_client.get("/browse/")
+    assert response.status_code == HTTPStatus.OK
+    html = response.content.decode()
+    assert fortune.text in html
+    assert hidden_fortune.text not in html
