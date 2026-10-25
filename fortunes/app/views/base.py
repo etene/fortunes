@@ -48,7 +48,7 @@ class BaseFortunesListView[ModelT: Model](BaseFortunesView):
         paginator = AsyncPaginator(queryset, per_page=20)
         return await paginator.aget_page(self.request.GET.get("page"))
 
-    async def get(self, request: HttpRequest):
+    async def get(self, request: HttpRequest) -> HttpResponse:
         queryset = self.get_queryset()
         filter_ = await self.get_filter(queryset=queryset, request=request)
         page = await self.get_page(filter_.qs)

@@ -1,3 +1,4 @@
+from typing import Any, ClassVar
 from django.contrib import messages
 from django.contrib.messages import add_message
 from django.db import IntegrityError
@@ -85,6 +86,11 @@ class FortuneListView(BaseFortunesListView[Fortune]):
     RESULTS_FOUND_MSG = "{result_count} citation(s) trouvée(s)"
     NO_RESULTS_MSG = "Aucune citation trouvée"
 
+    async def get_context_data(self) -> dict[str, Any]:
+        data = await super().get_context_data()
+        data["exportable_fields"] = FortuneCSVExportView.EXPORTABLE_FIELDS
+        return data
+
     async def get_filter(self, queryset: QuerySet[Fortune], request: HttpRequest):
         return await build_fortune_filter(data=request.GET, queryset=queryset)
 
@@ -154,35 +160,51 @@ class ToggleHiddenFortuneView(BaseFortunesView[Fortune]):
         return HttpResponseRedirect(f"/{fortune.id}/")
 
 
-async def fortune_export(request: HttpRequest):
+class FortuneCSVExportView(FortuneListView):
 
-    allowed_fields: tuple[str, ...] = ("id", "date", "author_name", "text", "hidden")
-    exported_fields = allowed_fields
-    if raw_fields := request.GET.get("fields"):
-        requested_fields = set(filter(None, raw_fields.split(",")))
-        exported_fields = tuple(filter(lambda y: y in requested_fields, allowed_fields))
-    if not exported_fields:
-        return HttpResponseBadRequest(
-            content="One or more of the following comma-separated fields "
-            "is required as the 'fields' GET parameter:\n" + ", ".join(allowed_fields)
+    EXPORTABLE_FIELDS: ClassVar[dict[str, str]] = {
+        "id": "Numéro",
+        "date": "Date",
+        "author_name": "Auteur",
+        "text": "Citation",
+    }
+
+    async def post(self, request: HttpRequest) -> HttpResponse:
+        queryset = self.get_queryset()
+        filter_ = await self.get_filter(queryset=queryset, request=request)
+        allowed_fields = tuple(self.EXPORTABLE_FIELDS)
+        exported_fields = allowed_fields
+        requested_fields = {
+            name
+            for name, value in dict(request.POST).items()
+            if "csrf_token" not in name and value == ["on"]
+        }
+        if requested_fields:
+            exported_fields = tuple(
+                filter(lambda y: y in requested_fields, allowed_fields)
+            )
+        if not exported_fields:
+            return HttpResponseBadRequest(
+                content="One or more of the following fields "
+                "is required in the POST data:\n" + ", ".join(allowed_fields)
+            )
+        fortune_qs = filter_.qs
+        if "author_name" in exported_fields:
+            fortune_qs = fortune_qs.with_author_names()
+
+        fortune_filter = await build_fortune_filter(
+            data=request.GET,
+            queryset=fortune_qs,
         )
-    fortune_qs = Fortune.objects.current().latest_first()
-    if "author_name" in exported_fields:
-        fortune_qs = fortune_qs.with_author_names()
-
-    fortune_filter = await build_fortune_filter(
-        data=request.GET,
-        queryset=fortune_qs,
-    )
-    csv_output = StringIO()
-    csv_writer = csv.DictWriter(f=csv_output, fieldnames=exported_fields)
-    csv_writer.writeheader()
-    async for fortune in fortune_filter.qs.values(*exported_fields):
-        csv_writer.writerow(fortune)
-    return HttpResponse(
-        content=csv_output.getvalue(),
-        headers={
-            "Content-Type": "text/csv",
-            "Content-Disposition": 'attachment; filename="fortunes-export.csv"',
-        },
-    )
+        csv_output = StringIO()
+        csv_writer = csv.DictWriter(f=csv_output, fieldnames=exported_fields)
+        csv_writer.writeheader()
+        async for fortune in fortune_filter.qs.values(*exported_fields):
+            csv_writer.writerow(fortune)
+        return HttpResponse(
+            content=csv_output.getvalue(),
+            headers={
+                "Content-Type": "text/csv",
+                "Content-Disposition": 'attachment; filename="fortunes-export.csv"',
+            },
+        )

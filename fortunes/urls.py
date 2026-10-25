@@ -72,7 +72,7 @@ urlpatterns = [
     ),
     path(
         route="export/",
-        view=fortunes.app.views.fortune.fortune_export,
+        view=fortunes.app.views.fortune.FortuneCSVExportView.as_view(),
         name="fortune-export",
     ),
     path(

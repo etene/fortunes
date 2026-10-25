@@ -3,6 +3,29 @@
 
 {% block toolbar %}
 
+<form method="post" action="/export/{% querystring %}">
+  {% csrf_token %}
+  <div class="btn-group">
+    <button type="submit" class="btn btn-outline-primary">
+      <i class="bi bi-download"></i>&nbsp;Exporter en CSV
+    </button>
+    <a class="btn btn-outline-primary dropdown-toggle dropdown-toggle-split" data-bs-auto-close="outside"  href="#" data-bs-toggle="dropdown" aria-expanded="false"></a>
+    <ul class="dropdown-menu">
+      <li>
+        <h6 class="dropdown-header">Champs à exporter</h6>
+      </li>
+      <li>
+        <div class="btn-group" role="group">
+          {% for name, label in exportable_fields.items %}
+          <input type="checkbox" checked class="btn-check" name="{{ name }}" id="id_export_{{ name }}" autocomplete="off">
+          <label class="btn btn-outline-info" for="id_export_{{ name }}">{{ label }}</label>
+          {% endfor %}
+        </li>
+      </li>
+    </div>
+</form>
+
+
 <a class="btn btn-outline-secondary" role="button" data-bs-toggle="collapse"
   data-bs-target="#searchForm,#viewFilters,#hideFilters" aria-expanded="false" aria-controls="searchForm">
   <span id="viewFilters" class="collapse {% if not display_search_form %}show{% endif %}">
@@ -12,6 +35,7 @@
     <i class="bi bi-eye-slash"></i>&nbsp;Masquer les filtres
   </span>
 </a>
+
 {% endblock %}
 
 {% block content %}

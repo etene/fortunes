@@ -20,7 +20,7 @@ async def test_export_fortunes_csv(
         key=attrgetter("date"),
         reverse=True,
     )
-    response = await async_client.get("/export/")
+    response = await async_client.post("/export/")
     assert response.status_code == HTTPStatus.OK
     assert response.headers["Content-Type"] == "text/csv"
     assert (
@@ -31,12 +31,11 @@ async def test_export_fortunes_csv(
     rows = list(reader)
     assert len(rows) == len(fortunes) == 30
     for row, fortune in zip(rows, fortunes):
-        assert list(row) == ["id", "date", "author_name", "text", "hidden"]
+        assert list(row) == ["id", "date", "author_name", "text"]
         assert row["id"] == str(fortune.id)
         assert row["date"] == str(fortune.date)
         assert row["author_name"] == author.name
         assert row["text"] == fortune.text
-        assert row["hidden"] == str(fortune.hidden)
 
 
 @pytest.mark.parametrize(
@@ -44,7 +43,7 @@ async def test_export_fortunes_csv(
     (
         ("id", "author_name", "date"),
         ("id", "text", "text"),
-        ("hidden",),
+        ("text",),
     ),
 )
 async def test_export_fortunes_csv_custom_fields(
@@ -56,8 +55,8 @@ async def test_export_fortunes_csv_custom_fields(
     await fortune_factory.create_batch(3, author=author)
     fortunes = [i async for i in Fortune.objects.with_author_names().latest_first()]
 
-    response = await async_client.get(
-        "/export/", data={"fields": ",".join(requested_fields)}
+    response = await async_client.post(
+        "/export/", data={i: ["on"] for i in requested_fields}
     )
     assert response.status_code == HTTPStatus.OK
     assert response.headers["Content-Type"] == "text/csv"
@@ -74,8 +73,8 @@ async def test_export_fortunes_csv_bad_fields(
     async_client: AsyncClient,
 ):
     requested_fields = ("author",)
-    response = await async_client.get(
-        "/export/", data={"fields": ",".join(requested_fields)}
+    response = await async_client.post(
+        "/export/", data={i: ["on"] for i in requested_fields}
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.content.decode().startswith("One or more of the following")
