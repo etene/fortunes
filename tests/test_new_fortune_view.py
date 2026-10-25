@@ -4,6 +4,7 @@ from django.test import AsyncClient
 from datetime import date
 from http import HTTPStatus
 from fortunes.app.models import Author, Fortune
+from tests.tools import match_html_elements
 
 pytestmark = [pytest.mark.django_db(transaction=True), pytest.mark.asyncio]
 
@@ -52,3 +53,25 @@ async def test_create_fortune(
         assert getattr(created_fortune, attname) == expected_value
     assert created_fortune.author == author
     assert response.headers["Location"] == f"/{created_fortune.id}/"
+
+
+async def test_create_duplicate_fortune(
+    fortune: Fortune,
+    async_client: AsyncClient,
+):
+    response = await async_client.post(
+        "/new/",
+        data={
+            "author_id": fortune.author.id,
+            "text": fortune.text,
+        },
+    )
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert await Fortune.objects.filter(text=fortune.text).acount() == 1
+    match_html_elements(
+        html=response.content,
+        tag="div",
+        attrs={"class": "invalid-feedback d-block"},
+        contains="Il existe déjà une autre citation avec le même texte",
+        expected_matches=1,
+    )

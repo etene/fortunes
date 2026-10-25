@@ -2,7 +2,9 @@ from abc import ABC, abstractmethod
 import abc
 from typing import TYPE_CHECKING, Any, ClassVar
 from django.contrib import messages
+from django.core.exceptions import NON_FIELD_ERRORS
 from django.core.paginator import AsyncPage, AsyncPaginator
+from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import aget_object_or_404, render
 from django.views.generic import View
@@ -138,6 +140,9 @@ class BaseFortunesFormView[ModelT: Model](BaseFortunesView):
 
 class BaseCreateFormView[ModelT: Model](BaseFortunesFormView):
 
+    def handle_integrity_error(self, err: IntegrityError) -> tuple[str, str]:
+        return NON_FIELD_ERRORS, f"Database integrity error: {err}"
+
     async def get(self, request: HttpRequest) -> HttpResponse:
         form_cls, context = await asyncio.gather(
             self.get_form_class(),
@@ -156,15 +161,19 @@ class BaseCreateFormView[ModelT: Model](BaseFortunesFormView):
         )
         form = form_cls(data=request.POST)
         if form.is_valid():
-            instance = await form.create()
-            return HttpResponseRedirect(self.get_redirect_path(instance))
-        else:
-            return render(
-                request=request,
-                template_name=self.template,
-                context=context | {"form": form},
-                status=HTTPStatus.BAD_REQUEST,
-            )
+            try:
+                instance = await form.create()
+            except IntegrityError as err:
+                error_field, validation_error = self.handle_integrity_error(err)
+                form.add_error(field=error_field, error=validation_error)
+            else:
+                return HttpResponseRedirect(self.get_redirect_path(instance))
+        return render(
+            request=request,
+            template_name=self.template,
+            context=context | {"form": form},
+            status=HTTPStatus.BAD_REQUEST,
+        )
 
 
 class BaseEditFormView[ModelT: Model](BaseFortunesFormView):

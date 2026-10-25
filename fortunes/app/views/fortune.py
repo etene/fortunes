@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.db.models import QuerySet
 from django.http import (
     HttpRequest,
@@ -108,6 +109,11 @@ class FortuneEditFormView(BaseEditFormView[Fortune]):
 
 class FortuneCreateFormView(BaseCreateFormView[Fortune]):
     template = "app/edit_fortune.html"
+
+    def handle_integrity_error(self, err: IntegrityError) -> tuple[str, str]:
+        if str(err) == "UNIQUE constraint failed: app_fortune.text":
+            return "text", "Il existe déjà une autre citation avec le même texte"
+        return super().handle_integrity_error(err)
 
     async def get_form_class(self) -> type[BaseFortuneForm]:
         return await build_fortune_form_cls()
