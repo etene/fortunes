@@ -9,7 +9,10 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Non</button>
-        <button type="button" class="btn btn-danger">Supprimer la citation</button>
+        <form action="#" method="post">
+          {% csrf_token %}
+          <input type="submit" class="btn btn-danger" id="fortuneDeleteButton" name="fortuneDeleteButton" value="Supprimer la citation"/>
+        </form>
       </div>
     </div>
   </div>
@@ -43,6 +46,8 @@ fortuneDeleteModal.addEventListener('show.bs.modal', function (event) {
         confirmExtra.innerText = "Elle sera placée dans la corbeille d'où vous pourrez la restaurer si besoin."
     }
     modalBody.appendChild(confirmExtra)
+    var deleteBtnForm = fortuneDeleteModal.querySelector(".modal-footer").querySelector("form")
+    deleteBtnForm["action"] = `/${fortune_id}/delete/`
 })
 
 </script>

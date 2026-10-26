@@ -144,11 +144,22 @@ class FortuneCreateFormView(BaseCreateFormView[Fortune]):
 async def delete_fortune(request: HttpRequest, fortune_id: int):
     fortune = await aget_object_or_404(Fortune, pk=fortune_id)
     if fortune.deleted:
+        messages.add_message(
+            request=request,
+            level=messages.WARNING,
+            message="La citation a été supprimée définitivement.",
+            extra_tags="warning",
+        )
         await fortune.adelete()
     else:
         fortune.deleted = True
         await fortune.asave(update_fields=("deleted",))
-
+        messages.add_message(
+            request=request,
+            level=messages.INFO,
+            message="La citation a été mise à la corbeille.",
+            extra_tags="info",
+        )
     return HttpResponseRedirect(redirect_to=request.GET.get("next", "/"))
 
 
