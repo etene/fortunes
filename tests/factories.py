@@ -1,7 +1,8 @@
 from typing import Any
 from django.db.models import Model
 from factory.django import DjangoModelFactory
-from factory import Faker, SubFactory
+from factory import Faker, SubFactory, Factory
+from immichpy.client.generated.models.person_response_dto import PersonResponseDto
 import pytest_asyncio
 import pytest
 from datetime import UTC
@@ -90,3 +91,14 @@ async def fortune(
     fortune_factory: AsyncFactory[Fortune], author_factory: AsyncFactory[Author]
 ) -> Fortune:
     return await fortune_factory()
+
+
+class ImmichPersonResponseDtoFactory(Factory):
+    class Meta:
+        model = PersonResponseDto
+
+    birth_date = Faker("date")  # TODO bounded
+    id = Faker("uuid4")
+    is_favorite = Faker("boolean")
+    is_hidden = False
+    name = Faker("first_name")

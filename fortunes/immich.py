@@ -4,7 +4,6 @@ from datetime import datetime
 from django.conf import settings
 from immichpy.client.generated.models.asset_type_enum import AssetTypeEnum
 from immichpy.client.generated.models.random_search_dto import RandomSearchDto
-
 from fortunes.app.models import Author
 
 

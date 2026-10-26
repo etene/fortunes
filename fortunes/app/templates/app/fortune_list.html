@@ -18,7 +18,7 @@
         <div class="btn-group" role="group">
           {% for name, label in exportable_fields.items %}
           <input type="checkbox" checked class="btn-check" name="{{ name }}" id="id_export_{{ name }}" autocomplete="off">
-          <label class="btn btn-outline-info" for="id_export_{{ name }}">{{ label }}</label>
+          <label class="btn btn-outline-primary" for="id_export_{{ name }}">{{ label }}</label>
           {% endfor %}
         </li>
       </li>
