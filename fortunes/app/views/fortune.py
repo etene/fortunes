@@ -15,6 +15,8 @@ import csv
 from django.shortcuts import aget_object_or_404, render
 from random import randint
 from datetime import UTC, datetime
+
+from django_filters import FilterSet
 from fortunes.app.filters import build_fortune_filter
 from fortunes.app.forms.fortune import BaseFortuneForm, build_fortune_form_cls
 from fortunes.app.views.base import (
@@ -96,6 +98,14 @@ class FortuneListView(BaseFortunesListView[Fortune]):
 
     def get_queryset(self) -> QuerySet[Fortune]:
         return super().get_queryset().with_authors().current().latest_first()  # type: ignore[attr-defined]
+
+    def request_was_filtered(self, filter_: FilterSet) -> bool:
+        if not super().request_was_filtered(filter_):
+            return False
+        assert (data := filter_.data)
+        data_with_values = {k: v for k, v in data.items() if v}
+        # assume the request has been filtered only if the filter form hasn't its default value
+        return data_with_values != {"hidden": "false"}
 
 
 class FortuneTrashcanView(FortuneListView):

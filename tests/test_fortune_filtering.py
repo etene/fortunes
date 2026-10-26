@@ -83,6 +83,15 @@ async def test_search_fortunes_by_date(
     }
     response = await async_client.get("/browse/", query_params=query_params)
     assert response.status_code == HTTPStatus.OK
+    # Check search form is visible
+    search_form = match_html_elements(
+        response.content,
+        tag="div",
+        attrs={"id": "searchForm"},
+        expected_matches=1,
+    )[0]
+    assert search_form.attrs["class"]
+    assert "show" in search_form.attrs["class"]
     if expected_fortune_years:
         assert_message(
             response,
@@ -114,3 +123,22 @@ async def test_hidden_fortunes_not_visible(
     html = response.content.decode()
     assert fortune.text in html
     assert hidden_fortune.text not in html
+
+
+async def test_no_search_form_when_only_hidden_false(
+    fortune: Fortune,
+    async_client: AsyncClient,
+):
+    response = await async_client.get("/browse/", {"hidden": "false"})
+    assert response.status_code == HTTPStatus.OK
+    # no message with the number of results found
+    assert not list(messages.get_messages(response.asgi_request))
+    # search form is not visible
+    search_form = match_html_elements(
+        response.content,
+        tag="div",
+        attrs={"id": "searchForm"},
+        expected_matches=1,
+    )[0]
+    assert search_form.attrs["class"]
+    assert "show" not in search_form.attrs["class"]

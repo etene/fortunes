@@ -48,12 +48,14 @@ class BaseFortunesListView[ModelT: Model](BaseFortunesView):
         paginator = AsyncPaginator(queryset, per_page=20)
         return await paginator.aget_page(self.request.GET.get("page"))
 
+    def request_was_filtered(self, filter_: FilterSet) -> bool:
+        return bool(filter_.data and any(filter_.data.values()))
+
     async def get(self, request: HttpRequest) -> HttpResponse:
         queryset = self.get_queryset()
         filter_ = await self.get_filter(queryset=queryset, request=request)
         page = await self.get_page(filter_.qs)
-        # FIXME: ignore hidden field when it's false
-        searched = filter_.data and any(filter_.data.values())
+        searched = self.request_was_filtered(filter_)
         pages = None
 
         if result_count := await filter_.qs.acount():
