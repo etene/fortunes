@@ -1,8 +1,11 @@
 from http import HTTPStatus
+from unittest.mock import call
 import pytest
 from uuid import uuid4
 from django.test import AsyncClient
 from fortunes.app.models import Author
+from tests.factories import ImmichPersonResponseDtoFactory
+from tests.immich_mock import ImmichClientMock
 from tests.tools import match_html_elements
 
 pytestmark = [pytest.mark.django_db(transaction=True), pytest.mark.asyncio]
@@ -68,3 +71,27 @@ async def test_get_author_create_form(
         },
         expected_matches=1,
     )
+
+
+@pytest.mark.parametrize("author_in_immich", (True, False))
+async def test_create_author_without_immich_id(
+    async_client: AsyncClient,
+    immich_mock: ImmichClientMock,
+    author_in_immich: bool,
+):
+    immich_author = ImmichPersonResponseDtoFactory.create()
+    if author_in_immich:
+        immich_mock.persons.append(immich_author)
+    response = await async_client.post(
+        path="/author/new/",
+        data={"name": immich_author.name},
+    )
+    assert response.status_code == HTTPStatus.FOUND
+    assert immich_mock.search_person_mock.call_args_list == [
+        call(name=immich_author.name)
+    ]
+    author = await Author.objects.aget(name=immich_author.name)
+    if author_in_immich:
+        assert author.immich_id == immich_author.id
+    else:
+        assert author.immich_id is None

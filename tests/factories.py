@@ -1,7 +1,8 @@
 from typing import Any
+from uuid import uuid4
 from django.db.models import Model
 from factory.django import DjangoModelFactory
-from factory import Faker, SubFactory, Factory
+from factory import Faker, SubFactory, Factory, lazy_attribute
 from immichpy.client.generated.models.person_response_dto import PersonResponseDto
 import pytest_asyncio
 import pytest
@@ -102,3 +103,7 @@ class ImmichPersonResponseDtoFactory(Factory):
     is_favorite = Faker("boolean")
     is_hidden = False
     name = Faker("first_name")
+
+    @lazy_attribute
+    def thumbnail_path(self) -> str:
+        return f"/data/thumbs/{uuid4()}/58/08/{self.id}.jpeg"

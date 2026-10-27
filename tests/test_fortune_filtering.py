@@ -65,6 +65,7 @@ async def test_search_fortune_text(
     ),
 )
 async def test_search_fortunes_by_date(
+    author: Author,
     fortune_factory: AsyncFactory[Fortune],
     async_client: AsyncClient,
     query_params: dict[str, str],
@@ -72,13 +73,19 @@ async def test_search_fortunes_by_date(
 ):
     fortunes_by_year: dict[int, Fortune] = {
         2020: await fortune_factory(
-            date=date(year=2020, month=6, day=23), text="2020 fortune"
+            date=date(year=2020, month=6, day=23),
+            text="2020 fortune",
+            author=author,
         ),
         2024: await fortune_factory(
-            date=date(year=2024, month=4, day=20), text="2024 fortune"
+            date=date(year=2024, month=4, day=20),
+            text="2024 fortune",
+            author=author,
         ),
         2026: await fortune_factory(
-            date=date(year=2026, month=12, day=30), text="2026 fortune"
+            date=date(year=2026, month=12, day=30),
+            text="2026 fortune",
+            author=author,
         ),
     }
     response = await async_client.get("/browse/", query_params=query_params)
