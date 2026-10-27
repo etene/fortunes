@@ -1,8 +1,8 @@
-from uuid import UUID
 from immichpy import AsyncClient
 from datetime import datetime
 from django.conf import settings
 from immichpy.client.generated.models.asset_type_enum import AssetTypeEnum
+from immichpy.client.generated.models.person_response_dto import PersonResponseDto
 from immichpy.client.generated.models.random_search_dto import RandomSearchDto
 from fortunes.app.models import Author
 
@@ -14,12 +14,12 @@ def immich_client() -> AsyncClient:
     )
 
 
-async def find_person_id(name: str) -> UUID:
+async def find_person(name: str) -> PersonResponseDto:
     async with immich_client() as immich:
         response = await immich.search.search_person(name=name)
         for i in response:
             if i.name.lower() == name.lower():
-                return i.id
+                return i
     raise LookupError(f"No immich person found with {name=}")
 
 

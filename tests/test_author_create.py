@@ -74,7 +74,7 @@ async def test_get_author_create_form(
 
 
 @pytest.mark.parametrize("author_in_immich", (True, False))
-async def test_create_author_without_immich_id(
+async def test_create_author_without_immich_info(
     async_client: AsyncClient,
     immich_mock: ImmichClientMock,
     author_in_immich: bool,
@@ -93,5 +93,7 @@ async def test_create_author_without_immich_id(
     author = await Author.objects.aget(name=immich_author.name)
     if author_in_immich:
         assert author.immich_id == immich_author.id
+        assert author.birthday == immich_author.birth_date
     else:
         assert author.immich_id is None
+        assert author.birthday is None

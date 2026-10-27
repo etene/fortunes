@@ -98,7 +98,7 @@ class ImmichPersonResponseDtoFactory(Factory):
     class Meta:
         model = PersonResponseDto
 
-    birth_date = Faker("date")  # TODO bounded
+    birth_date = Faker("date_of_birth", minimum_age=1)
     id = Faker("uuid4")
     is_favorite = Faker("boolean")
     is_hidden = False
