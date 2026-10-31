@@ -1,12 +1,12 @@
 from typing import Any
 from uuid import uuid4
 from django.db.models import Model
+from factory.declarations import SelfAttribute
 from factory.django import DjangoModelFactory
-from factory import Faker, SubFactory, Factory, lazy_attribute
+from factory import Faker, SubFactory, Factory, lazy_attribute, Maybe
 from immichpy.client.generated.models.person_response_dto import PersonResponseDto
 import pytest_asyncio
 import pytest
-from datetime import UTC
 
 from fortunes.app.models import Author, Fortune
 
@@ -63,8 +63,21 @@ class AuthorFactory(DjangoModelFactory[Author]):
 
     id = Faker("random_int")
     name = Faker("first_name")
-    birthday = Faker("past_date", tzinfo=UTC)
-    immich_id = Faker("uuid4", cast_to=None)
+    birthday = Maybe(
+        decider="has_birthday",
+        yes_declaration=Faker("date_of_birth", minimum_age=1, maximum_age=99),
+        no_declaration=None,
+    )
+
+    immich_id = Maybe(
+        decider="has_immich_id",
+        yes_declaration=Faker("uuid4", cast_to=None),
+        no_declaration=None,
+    )
+
+    class Params:
+        has_birthday = Faker("boolean")
+        has_immich_id = Faker("boolean")
 
 
 class FortuneFactory(DjangoModelFactory[Fortune]):
@@ -74,8 +87,17 @@ class FortuneFactory(DjangoModelFactory[Fortune]):
     id = Faker("random_int")
     author = SubFactory(AuthorFactory)
     text = Faker("paragraph")
-    date = Faker("date_object")
+    date = Maybe(
+        decider="has_date",
+        yes_declaration=Faker(
+            "date_between_dates", date_start=SelfAttribute("..author.birthday")
+        ),
+        no_declaration=None,
+    )
     hidden = False
+
+    class Params:
+        has_date = Faker("boolean")
 
 
 _author_factory = AsyncFactory.as_fixture(AuthorFactory)

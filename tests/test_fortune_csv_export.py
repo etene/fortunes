@@ -4,7 +4,6 @@ from django.test import AsyncClient
 import csv
 
 from fortunes.app.models import Author, Fortune
-from operator import attrgetter
 from tests.factories import AsyncFactory
 
 pytestmark = [pytest.mark.django_db(transaction=True), pytest.mark.asyncio]
@@ -15,11 +14,9 @@ async def test_export_fortunes_csv(
     author: Author,
     fortune_factory: AsyncFactory[Fortune],
 ):
-    fortunes = sorted(
-        await fortune_factory.create_batch(30, author=author),
-        key=attrgetter("date"),
-        reverse=True,
-    )
+    fortunes_by_id: dict[int, Fortune] = {
+        i.id: i for i in await fortune_factory.create_batch(30, author=author)
+    }
     response = await async_client.post("/export/")
     assert response.status_code == HTTPStatus.OK
     assert response.headers["Content-Type"] == "text/csv"
@@ -29,11 +26,11 @@ async def test_export_fortunes_csv(
     )
     reader = csv.DictReader(response.content.decode().splitlines())
     rows = list(reader)
-    assert len(rows) == len(fortunes) == 30
-    for row, fortune in zip(rows, fortunes):
+    assert len(rows) == len(fortunes_by_id) == 30
+    for row in rows:
         assert list(row) == ["id", "date", "author_name", "text"]
-        assert row["id"] == str(fortune.id)
-        assert row["date"] == str(fortune.date)
+        fortune = fortunes_by_id[int(row["id"])]
+        assert row["date"] == str(fortune.date or "")
         assert row["author_name"] == author.name
         assert row["text"] == fortune.text
 
@@ -66,7 +63,7 @@ async def test_export_fortunes_csv_custom_fields(
     for row, fortune in zip(rows, fortunes):
         assert set(row) == set(requested_fields)
         for i in requested_fields:
-            assert row[i] == str(getattr(fortune, i))
+            assert row[i] == str(getattr(fortune, i) or "")
 
 
 async def test_export_fortunes_csv_bad_fields(

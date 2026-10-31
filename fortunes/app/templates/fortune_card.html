@@ -81,7 +81,7 @@
     </div>
     {% if display_images and fortune.author.immich_id %}
     <img src="{% url 'random-image' fortune_id=fortune.id %}" class="card-img-bottom"
-        title="{{ fortune.author.name }} en {{ fortune.date.year }}">
+        title="{{ fortune.author.name }}{% if fortune.date %} en {{ fortune.date.year }}{% endif %}">
     {% endif %}
 </div>
 

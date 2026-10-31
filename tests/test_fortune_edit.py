@@ -8,13 +8,15 @@ from tests.tools import match_html_elements
 pytestmark = [pytest.mark.django_db(transaction=True), pytest.mark.asyncio]
 
 
+@pytest.mark.parametrize("fortune_has_date", (True, False))
 async def test_get_fortune_edit_form(
-    fortune: Fortune,
+    fortune_factory: AsyncFactory[Fortune],
     author_factory: AsyncFactory[Author],
     async_client: AsyncClient,
+    fortune_has_date: bool,
 ):
-    author = fortune.author
-    other_author = await author_factory()
+    author, other_author = await author_factory.create_batch(2)
+    fortune = await fortune_factory(author=author, has_date=fortune_has_date)
     response = await async_client.get(f"/{fortune.id}/edit/")
     assert response.status_code == HTTPStatus.OK
     assert (
@@ -31,19 +33,20 @@ async def test_get_fortune_edit_form(
         )
         == 1
     )
-    match_html_elements(
+    date_form_input = match_html_elements(
         response.content,
         # There is an input to edit the date
         tag="input",
         attrs={
             "type": "date",
             "name": "date",
-            "value": str(fortune.date),  # TDDO date is optional actually
             "class": "form-control is-valid",
             "placeholder": "Date",
         },
         expected_matches=1,
-    )
+    )[0]
+    if fortune_has_date:
+        assert date_form_input.attrs["value"] == str(fortune.date)
     match_html_elements(
         response.content,
         tag="textarea",
@@ -96,20 +99,20 @@ async def test_edit_fortune_text(
     fortune: Fortune,
     async_client: AsyncClient,
 ):
-    assert fortune.date
+    old_date = fortune.date
     response = await async_client.post(
         f"/{fortune.id}/edit/",
         data={
             "text": "New text.",
             "author_id": fortune.author.id,
-            "date": fortune.date.strftime("%Y-%m-%d"),
+            "date": fortune.date.strftime("%Y-%m-%d") if fortune.date else "",
         },
     )
     assert response.status_code == HTTPStatus.FOUND
     assert response["Location"] == f"/{fortune.id}/"
     await fortune.arefresh_from_db()
     assert fortune.text == "New text."
-    assert fortune.date
+    assert fortune.date == old_date
 
 
 async def test_edit_fortune_error(

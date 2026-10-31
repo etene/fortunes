@@ -4,15 +4,17 @@ import pytest
 from fortunes.app.models import Author
 from django.test import AsyncClient
 
+from tests.factories import AsyncFactory
 from tests.tools import assert_message
 
 pytestmark = [pytest.mark.django_db(transaction=True), pytest.mark.asyncio]
 
 
 async def test_edit_author_no_changes(
-    author: Author,
+    author_factory: AsyncFactory[Author],
     async_client: AsyncClient,
 ):
+    author = await author_factory(has_immich_id=True, has_birthday=True)
     assert author.birthday
     response = await async_client.post(
         f"/author/{author.id}/edit/",
