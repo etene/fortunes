@@ -24,14 +24,14 @@ class AuthorForm(AbstractForm[Author]):
     )
 
     @classmethod
-    async def guess_immich_info(cls, author: Author) -> None:
+    async def guess_immich_info(cls, author: Author) -> bool:
         if author.name and author.immich_id:
-            return
+            return False
         try:
             immich_person = await immich.find_person(name=author.name)
         except LookupError:
             # TODO log ?
-            return
+            return False
         changed: set[str] = set()
         if not author.immich_id:
             author.immich_id = immich_person.id
@@ -41,6 +41,8 @@ class AuthorForm(AbstractForm[Author]):
             changed.add("birthday")
         if changed:
             await author.asave(update_fields=changed)
+            return True
+        return False
 
     async def create(self) -> Author:
         created = await super().create()
@@ -48,7 +50,6 @@ class AuthorForm(AbstractForm[Author]):
         return created
 
     async def update(self, instance: Author) -> bool:
-        if not await super().update(instance):
-            return False
-        await self.guess_immich_info(instance)
-        return True
+        updated = await super().update(instance)
+        immich_info_updated = await self.guess_immich_info(instance)
+        return updated or immich_info_updated
