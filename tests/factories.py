@@ -4,6 +4,9 @@ from django.db.models import Model
 from factory.declarations import SelfAttribute
 from factory.django import DjangoModelFactory
 from factory import Faker, SubFactory, Factory, lazy_attribute, Maybe
+from immichpy.client.generated.models.asset_response_dto import AssetResponseDto
+from immichpy.client.generated.models.asset_type_enum import AssetTypeEnum
+from immichpy.client.generated.models.asset_visibility import AssetVisibility
 from immichpy.client.generated.models.person_response_dto import PersonResponseDto
 import pytest_asyncio
 import pytest
@@ -129,3 +132,33 @@ class ImmichPersonResponseDtoFactory(Factory):
     @lazy_attribute
     def thumbnail_path(self) -> str:
         return f"/data/thumbs/{uuid4()}/58/08/{self.id}.jpeg"
+
+
+class ImmichAssetResponseDtoFactory(Factory):
+    class Meta:
+        model = AssetResponseDto
+
+    id = Faker("uuid4")
+
+    thumbhash = "MWVhOTRiMTgzYTQ2MTcwODI4ZDlhMDA1YTQ0Y2RhYWUzMjYyMDQ1Ngo="
+    checksum = thumbhash
+    local_date_time = Faker("past_date", start_date="-10y")
+    file_created_at = Faker("past_date", start_date=SelfAttribute("..local_date_time"))
+    file_modified_at = Faker("past_date", start_date=SelfAttribute("..file_created_at"))
+    created_at = Faker("past_date", start_date=SelfAttribute("..file_created_at"))
+    updated_at = Faker("past_date", start_date=SelfAttribute("..created_at"))
+    duration = None
+    has_metadata = True
+    height = 1
+    width = 1
+    is_archived = False
+    is_edited = False
+    is_favorite = Faker("boolean")
+    is_offline = False
+    is_trashed = False
+    original_path = "tests/data/1px.jpeg"
+    original_file_name = "1px.jpeg"
+    original_mime_type = "image/jpeg"
+    visibility = AssetVisibility.TIMELINE
+    owner_id = Faker("uuid4")
+    type = AssetTypeEnum.IMAGE
