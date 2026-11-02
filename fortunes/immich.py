@@ -1,6 +1,7 @@
 from immichpy import AsyncClient
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.conf import settings
+from immichpy.client.generated.models.asset_response_dto import AssetResponseDto
 from immichpy.client.generated.models.asset_type_enum import AssetTypeEnum
 from immichpy.client.generated.models.person_response_dto import PersonResponseDto
 from immichpy.client.generated.models.random_search_dto import RandomSearchDto
@@ -25,12 +26,16 @@ async def find_person(name: str) -> PersonResponseDto:
 
 async def get_random_image(
     with_person: Author,
-    taken_before: datetime | None = None,
-    taken_after: datetime | None = None,
-) -> bytes:
+    around: datetime | None = None,
+    search_radius: timedelta = timedelta(weeks=3),
+) -> tuple[AssetResponseDto, bytes]:
     if not with_person.immich_id:
         # FIXME get other image ?
         raise LookupError(f"{with_person} has no immich id")
+    taken_after, taken_before = None, None
+    if around:
+        taken_after = around - search_radius
+        taken_before = around + search_radius
     async with immich_client() as immich:
         search_criteria = RandomSearchDto(
             withExif=True,
@@ -38,11 +43,18 @@ async def get_random_image(
             takenBefore=taken_before,
             type=AssetTypeEnum.IMAGE,
             personIds=[with_person.immich_id],
-            size=1,
+            size=100,
         )
         search_results = await immich.search.search_random(search_criteria)
+        if not search_results:
+            raise LookupError("No image found")  # TODO
+        if around:
+            # sort results by proximity to "around"
+            search_results.sort(
+                key=lambda res: abs((around - res.local_date_time).total_seconds())
+            )
         chosen_one = search_results[0]
-        return await immich.assets.download_asset(id=chosen_one.id)
+        return chosen_one, await immich.assets.download_asset(id=chosen_one.id)
 
 
 async def get_person_thumbnail(person: Author) -> bytes:

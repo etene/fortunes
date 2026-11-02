@@ -52,22 +52,27 @@ async def random_image(request: HttpRequest, fortune_id: int) -> HttpResponse:
         fortune = await Fortune.objects.with_authors().aget(pk=fortune_id)
     except Fortune.DoesNotExist:
         return HttpResponseNotFound()
-    image_bytes = await get_random_image(
-        taken_after=(
-            datetime(year=fortune.date.year, month=1, day=1, tzinfo=UTC)
-            if fortune.date
-            else None
-        ),
-        taken_before=(
-            datetime(year=fortune.date.year + 1, month=1, day=1, tzinfo=UTC)
+    image_data, image_bytes = await get_random_image(
+        around=(
+            datetime(
+                year=fortune.date.year,
+                month=fortune.date.month,
+                day=fortune.date.day,
+                hour=12,
+                tzinfo=UTC,
+            )
             if fortune.date
             else None
         ),
         with_person=fortune.author,
     )
+    image_name = f"{fortune.author.name} le {image_data.local_date_time.strftime("%x")}"
     return HttpResponse(
         content=image_bytes,
-        headers={"content-type": "image/jpg"},
+        headers={
+            "content-type": "image/jpg",
+            "content-disposition": f'inline; filename="{image_name}"',
+        },
     )
 
 

@@ -1,3 +1,4 @@
+from datetime import UTC
 from typing import Any
 from uuid import uuid4
 from django.db.models import Model
@@ -142,11 +143,19 @@ class ImmichAssetResponseDtoFactory(Factory):
 
     thumbhash = "MWVhOTRiMTgzYTQ2MTcwODI4ZDlhMDA1YTQ0Y2RhYWUzMjYyMDQ1Ngo="
     checksum = thumbhash
-    local_date_time = Faker("past_date", start_date="-10y")
-    file_created_at = Faker("past_date", start_date=SelfAttribute("..local_date_time"))
-    file_modified_at = Faker("past_date", start_date=SelfAttribute("..file_created_at"))
-    created_at = Faker("past_date", start_date=SelfAttribute("..file_created_at"))
-    updated_at = Faker("past_date", start_date=SelfAttribute("..created_at"))
+    local_date_time = Faker("past_datetime", start_date="-10y", tzinfo=UTC)
+    file_created_at = Faker(
+        "past_datetime", start_date=SelfAttribute("..local_date_time"), tzinfo=UTC
+    )
+    file_modified_at = Faker(
+        "past_datetime", start_date=SelfAttribute("..file_created_at"), tzinfo=UTC
+    )
+    created_at = Faker(
+        "past_datetime", start_date=SelfAttribute("..file_created_at"), tzinfo=UTC
+    )
+    updated_at = Faker(
+        "past_datetime", start_date=SelfAttribute("..created_at"), tzinfo=UTC
+    )
     duration = None
     has_metadata = True
     height = 1
