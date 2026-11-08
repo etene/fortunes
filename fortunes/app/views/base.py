@@ -25,8 +25,14 @@ class BaseFortunesView[ModelT: Model](ABC, View):
     def get_model_class(cls) -> type[ModelT]:
         return cls.__orig_bases__[0].__args__[0]  # type: ignore[attr-defined]
 
+    async def get_queryset(self) -> QuerySet[ModelT]:
+        return self.get_model_class().objects.all()  # type: ignore[attr-defined]
+
     async def get_context_data(self) -> dict[str, Any]:
-        return {"authors": [i async for i in Author.objects.all()]}
+        return {
+            "authors": [i async for i in Author.objects.all()],
+            "page_title": "Fortunes",
+        }
 
 
 class BaseFortunesListView[ModelT: Model](BaseFortunesView):
@@ -35,9 +41,6 @@ class BaseFortunesListView[ModelT: Model](BaseFortunesView):
     NO_RESULTS_MSG: ClassVar[str] = "Aucun résultat"
 
     template: ClassVar[str]
-
-    def get_queryset(self) -> QuerySet[ModelT]:
-        return self.get_model_class().objects.all()
 
     @abc.abstractmethod
     async def get_filter(
@@ -52,7 +55,7 @@ class BaseFortunesListView[ModelT: Model](BaseFortunesView):
         return bool(filter_.data and any(filter_.data.values()))
 
     async def get(self, request: HttpRequest) -> HttpResponse:
-        queryset = self.get_queryset()
+        queryset = await self.get_queryset()
         filter_ = await self.get_filter(queryset=queryset, request=request)
         page = await self.get_page(filter_.qs)
         searched = self.request_was_filtered(filter_)
@@ -102,11 +105,12 @@ class BaseFortunesDeleteView[ModelT: Model](BaseFortunesView):
     NOT_FOUND_MSG: ClassVar[str] = "Aucun objet correspondant à supprimer"
 
     async def perform_deletion(self, instance: ModelT) -> bool:
+        msg = self.DELETION_SUCCESS_MSG.format(instance=instance)
         await instance.adelete()
         messages.add_message(
             request=self.request,
             level=messages.SUCCESS,
-            message=self.DELETION_SUCCESS_MSG.format(instance=instance),
+            message=msg,
             extra_tags="success",
         )
         return True
@@ -133,9 +137,6 @@ class BaseFortunesFormView[ModelT: Model](BaseFortunesView):
 
     @abstractmethod
     async def get_form_class(self) -> type["AbstractForm[ModelT]"]: ...
-
-    async def get_queryset(self) -> "QuerySet[ModelT]":
-        return (await self.get_form_class()).get_model().objects.all()  # type: ignore[attr-defined]
 
     @abstractmethod
     def get_redirect_path(self, instance: ModelT) -> str: ...
@@ -209,6 +210,7 @@ class BaseEditFormView[ModelT: Model](BaseFortunesFormView):
                 messages.add_message(
                     request=request,
                     level=messages.SUCCESS,
+                    # TODO better
                     message=f"{instance._meta.model_name} modifié",
                     extra_tags="success",
                 )

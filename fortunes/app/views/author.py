@@ -1,3 +1,4 @@
+from typing import Any
 from django.contrib import messages
 from django.db.models import ProtectedError
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
@@ -15,6 +16,11 @@ from fortunes.app.views.base import (
 
 class AuthorEditFormView(BaseEditFormView[Author]):
     template = "app/edit_author.html"
+
+    async def get_context_data(self) -> dict[str, Any]:
+        return (await super().get_context_data()) | {
+            "title": "Modifier un auteur | Fortunes"
+        }
 
     async def get_form_class(self) -> type[AuthorForm]:
         return AuthorForm

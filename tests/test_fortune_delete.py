@@ -33,8 +33,8 @@ async def test_delete_fortune(
     assert deletion_response.headers["Location"] == "/"
     assert_message(
         deletion_response,
-        message="La citation a été supprimée définitivement.",
-        level=messages.WARNING,
+        message=f"La citation #{fortune.id} a été supprimée définitivement.",
+        level=messages.SUCCESS,
     )
     with pytest.raises(Fortune.DoesNotExist):
         await fortune.arefresh_from_db()

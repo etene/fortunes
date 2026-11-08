@@ -32,7 +32,7 @@ async def test_filter_fortunes_by_author(
         expected_matches=3,
     )
     assert {i.content_lines[0] for i in fortune_id_spans} == {
-        f"\xa0{i.id}" for i in author1_fortunes
+        str(i.id) for i in author1_fortunes
     }
     assert_message(
         response,

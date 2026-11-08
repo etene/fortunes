@@ -6,7 +6,7 @@
             <li class="nav-item">
                 <a class="nav-link active" href="{% url 'fortune-detail' fortune.id %}"
                     title="Citation numéro {{ fortune.id }}">
-                    <i class="bi bi-chat-quote"></i><span class="font-monospace">&nbsp;{{fortune.id }}</span>
+                    <span class="font-monospace">{{fortune.id }}</span>
                 </a>
             </li>
             {% if fortune.date %}

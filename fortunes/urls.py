@@ -32,7 +32,7 @@ urlpatterns = [
     ),
     path(
         route="random/",
-        view=fortunes.app.views.fortune.random_fortune,
+        view=fortunes.app.views.fortune.RandomFortuneView.as_view(),
         name="random-fortune",
     ),
     path(
@@ -56,8 +56,8 @@ urlpatterns = [
         name="new-fortune",
     ),
     path(
-        route="<int:fortune_id>/",
-        view=fortunes.app.views.fortune.single_fortune,
+        route="<int:pk>/",
+        view=fortunes.app.views.fortune.FortuneDetailView.as_view(),
         name="fortune-detail",
     ),
     path(
@@ -66,8 +66,8 @@ urlpatterns = [
         name="fortune-edit",
     ),
     path(
-        route="<int:fortune_id>/delete/",
-        view=fortunes.app.views.fortune.delete_fortune,
+        route="<int:pk>/delete/",
+        view=fortunes.app.views.fortune.FortuneDeleteView.as_view(),
         name="fortune-delete",
     ),
     path(
