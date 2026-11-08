@@ -19,10 +19,18 @@ dependencies = {file = ["requirements.txt"]}
 packages = [
     "fortunes",
     "fortunes.app",
+    "fortunes.app.views",
+    "fortunes.app.forms",
     "fortunes.app.migrations",
     "fortunes.app.management",
     "fortunes.app.management.commands",
+    "fortunes.app.templates",
+    "fortunes.app.templates.app",
 ]
+
+[tool.setuptools.package-data]
+"fortunes.app.templates.app" = ["*.html"]
+"fortunes.app.templates" = ["*.html"]
 
 [tool.mypy]
 check_untyped_defs = true
