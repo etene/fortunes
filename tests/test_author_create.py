@@ -1,7 +1,6 @@
 from http import HTTPStatus
 from unittest.mock import call
 import pytest
-from uuid import uuid4
 from django.test import AsyncClient
 from fortunes.app.models import Author
 from tests.factories import ImmichPersonResponseDtoFactory
@@ -11,21 +10,28 @@ from tests.tools import match_html_elements
 pytestmark = [pytest.mark.django_db(transaction=True), pytest.mark.asyncio]
 
 
+@pytest.mark.parametrize("author_in_immich", (True, False))
 async def test_create_author_with_immich_id(
     async_client: AsyncClient,
+    immich_mock: ImmichClientMock,
+    author_in_immich: bool,
 ):
-    fake_immich_id = uuid4()
+    fake_person = ImmichPersonResponseDtoFactory.create()
+    if author_in_immich:
+        immich_mock.persons.append(fake_person)
     response = await async_client.post(
         path="/author/new/",
         data={
-            "name": "Jean-Michel",
-            "immich_id": fake_immich_id,
+            "name": fake_person.name,
+            "immich_id": fake_person.id,
         },
     )
     assert response.status_code == HTTPStatus.FOUND
-    created_author = await Author.objects.aget(name="Jean-Michel")
-    assert created_author.immich_id == fake_immich_id
+    created_author = await Author.objects.aget(name=fake_person.name)
+    assert created_author.immich_id == fake_person.id
     assert response.headers["location"] == f"/author/{created_author.id}/edit/"
+    if author_in_immich:
+        assert created_author.birthday == fake_person.birth_date
 
 
 async def test_get_author_create_form(

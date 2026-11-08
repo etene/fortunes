@@ -33,7 +33,6 @@ class AbstractForm[ModelT: Model](forms.Form):
                 old_value = getattr(instance, field)
                 new_value = self.cleaned_data[field]
                 if old_value != new_value:
-                    LOG.error("%s changed from %r to %r", field, old_value, new_value)
                     setattr(instance, field, new_value)
                     really_changed_data.add(field)
             if really_changed_data:

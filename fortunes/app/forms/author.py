@@ -25,7 +25,7 @@ class AuthorForm(AbstractForm[Author]):
 
     @classmethod
     async def guess_immich_info(cls, author: Author) -> bool:
-        if author.name and author.immich_id:
+        if author.name and author.immich_id and author.birthday:
             return False
         try:
             immich_person = await immich.find_person(name=author.name)
