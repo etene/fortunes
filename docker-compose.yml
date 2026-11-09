@@ -1,7 +1,11 @@
+
 services:
   fortunes:
     ports:
       - "1994:8000/tcp"
-    build: .
+    build:
+        context: .
+        args:
+          FORTUNES_UID: ${FORTUNES_UID}
     volumes:
       - ./data/:/home/fortunes/.config/fortunes/
