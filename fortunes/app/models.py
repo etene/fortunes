@@ -24,7 +24,7 @@ class FortuneQuerySet(models.QuerySet["Fortune"]):
         return self.annotate(author_name=models.F("author__name"))
 
     def latest_first(self) -> "FortuneQuerySet":
-        return self.order_by("-date")
+        return self.order_by("-date", "-id")
 
 
 class Fortune(models.Model):
