@@ -154,6 +154,11 @@ class FortuneEditFormView(BaseEditFormView[Fortune]):
 class FortuneCreateFormView(BaseCreateFormView[Fortune]):
     template = "app/edit_fortune.html"
 
+    async def get_context_data(self) -> dict[str, Any]:
+        return (await super().get_context_data()) | {
+            "title": "Nouvelle citation | Fortunes"
+        }
+
     def handle_integrity_error(self, err: IntegrityError) -> tuple[str, str]:
         if str(err) == "UNIQUE constraint failed: app_fortune.text":
             return "text", "Il existe déjà une autre citation avec le même texte"
