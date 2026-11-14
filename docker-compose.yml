@@ -9,3 +9,4 @@ services:
           FORTUNES_UID: ${FORTUNES_UID}
     volumes:
       - ./data/:/home/fortunes/.config/fortunes/
+    restart: always
