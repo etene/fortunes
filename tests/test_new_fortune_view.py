@@ -75,3 +75,50 @@ async def test_create_duplicate_fortune(
         contains="Il existe déjà une autre citation avec le même texte",
         expected_matches=1,
     )
+
+
+async def test_get_fortune_create_form(
+    async_client: AsyncClient,
+):
+    response = await async_client.get("/new/")
+    assert response.status_code == HTTPStatus.OK
+
+    # There is an input for the date with today's date
+    match_html_elements(
+        html=response.content,
+        tag="input",
+        attrs={
+            "id": "id_date",
+            "class": "form-control",
+            "type": "date",
+            "name": "date",
+            "value": date.today().isoformat(),
+            "placeholder": "Date",
+        },
+        expected_matches=1,
+    )
+    # there is a textarea for the fortune
+    match_html_elements(
+        html=response.content,
+        tag="textarea",
+        attrs={
+            "id": "id_text",
+            "class": "form-control",
+            "name": "text",
+            "placeholder": "Fortune",
+            "required": None,
+        },
+        expected_matches=1,
+    )
+    # there is a checkbox to hide the fortune
+    match_html_elements(
+        html=response.content,
+        tag="input",
+        attrs={
+            "id": "id_hidden",
+            "name": "hidden",
+            "class": "form-check-input",
+            "type": "checkbox",
+        },
+        expected_matches=1,
+    )

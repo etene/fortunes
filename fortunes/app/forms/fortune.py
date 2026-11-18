@@ -11,7 +11,7 @@ class BaseFortuneForm(AbstractForm[Fortune]):
     date = forms.DateField(
         label="Date",
         widget=FortuneDateInput(format="%Y-%m-%d"),
-        initial=date.today().isoformat(),
+        initial=lambda: date.today().isoformat(),
         required=False,
     )
     text = forms.CharField(
