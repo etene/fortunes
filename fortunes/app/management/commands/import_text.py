@@ -23,6 +23,8 @@ class Command(BaseCommand):
             seen: set[str] = set()
             for line in fp:
                 line = line.strip("\ufeff*").strip()
+                if not line:
+                    continue
                 date_match = date_re.search(line)
                 assert date_match, f"no date for {line!r} !"
                 date_parts = {k: int(v) for k, v in date_match.groupdict().items()}
